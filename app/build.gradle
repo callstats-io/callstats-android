@@ -1,0 +1,33 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+android {
+  compileSdkVersion compileSdk
+  defaultConfig {
+    applicationId "io.callstats.demo"
+    minSdkVersion minSdk
+    targetSdkVersion targetSdk
+    versionCode 1
+    versionName "1.0"
+  }
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+    }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+}
+
+dependencies {
+  implementation fileTree(dir: 'libs', include: ['*.jar'])
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlinVersion"
+  implementation "com.android.support:appcompat-v7:$supportVersion"
+  implementation "org.webrtc:google-webrtc:$webRtcVersion"
+  testImplementation "junit:junit:$junitVersion"
+}
