@@ -8,6 +8,7 @@ buildscript {
     kotlinVersion = '1.2.30'
     supportVersion = '27.1.1'
     junitVersion = '4.12'
+    socketIoVersion = '1.0.0'
     webRtcVersion = '1.0.22672'
   }
 

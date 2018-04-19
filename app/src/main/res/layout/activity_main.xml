@@ -10,12 +10,21 @@
   tools:context=".MainActivity">
 
   <EditText
+    android:id="@+id/room"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:hint="@string/main_room"
     android:inputType="text"/>
 
+  <EditText
+    android:id="@+id/username"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="@string/main_username"
+    android:inputType="text"/>
+
   <Button
+    android:id="@+id/submit"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:text="@string/main_join"/>

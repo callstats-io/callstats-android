@@ -1,5 +1,7 @@
 <resources>
   <string name="app_name">callstats-demo</string>
   <string name="main_room">Room</string>
+  <string name="main_username">Name</string>
   <string name="main_join">OK</string>
+  <string name="main_error_input">Please choose username and room name</string>
 </resources>
