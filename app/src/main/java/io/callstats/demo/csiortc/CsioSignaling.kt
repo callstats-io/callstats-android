@@ -5,7 +5,7 @@ import io.socket.client.IO
 import io.socket.client.Socket
 
 class CsioSignaling(
-    private val userId: String,
+    private val room: String,
     private val callback: Callback,
     private val socket: Socket = IO.socket(URL))
 {
@@ -32,12 +32,11 @@ class CsioSignaling(
   }
 
   init {
-    socket.connect()
-
     // listen to events
 
     socket.on(EVENT_CONNECT) {
       Log.i(TAG, "connected")
+      socket.emit(EVENT_JOIN, room)
       callback.onConnect()
     }
 
@@ -71,8 +70,8 @@ class CsioSignaling(
    * Join the room
    * @param room room name
    */
-  fun start(room: String) {
-    socket.emit(EVENT_JOIN, room)
+  fun start() {
+    socket.connect()
   }
 
   /**
@@ -80,6 +79,7 @@ class CsioSignaling(
    */
   fun stop() {
     socket.emit(EVENT_LEAVE)
+    socket.disconnect()
   }
 
   /**
@@ -87,5 +87,6 @@ class CsioSignaling(
    */
   fun send(toId: String, message: String) {
     socket.emit(EVENT_MESSAGE, toId, message)
+    Log.i(TAG, "sent message to $toId : $message")
   }
 }
