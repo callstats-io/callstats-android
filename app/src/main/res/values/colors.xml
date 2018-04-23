@@ -2,7 +2,7 @@
 <resources>
   <color name="primary">#602f97</color>
   <color name="primary_dark">#3F2370</color>
-  <color name="accent">#602f97</color>
+  <color name="accent">#3F2370</color>
 
   <color name="call_button_background">#fff</color>
   <color name="call_button_pressed_background">#ccc</color>

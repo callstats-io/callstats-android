@@ -2,4 +2,6 @@
 <resources>
   <dimen name="call_button_size">50dp</dimen>
   <dimen name="call_button_margin">8dp</dimen>
+  <dimen name="call_video_local_width">80dp</dimen>
+  <dimen name="call_video_local_height">120dp</dimen>
 </resources>

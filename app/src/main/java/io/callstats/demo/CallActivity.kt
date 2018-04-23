@@ -2,45 +2,69 @@ package io.callstats.demo
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import io.callstats.demo.csiortc.CsioSignaling
+import io.callstats.demo.csiortc.CsioRTC
+import kotlinx.android.synthetic.main.activity_call.*
 
-class CallActivity : AppCompatActivity() {
+class CallActivity : AppCompatActivity(), CsioRTC.Callback {
 
   companion object {
     const val EXTRA_ROOM = "extra_room"
-    const val EXTRA_USER = "extra_user"
   }
 
-  private var signaling: CsioSignaling? = null
+  private var csioRTC: CsioRTC? = null
+  private var showingVideoFromPeer: String? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_call)
 
-    val room = intent.getStringExtra(EXTRA_ROOM) ?: throw IllegalArgumentException("need room")
-    val user = intent.getStringExtra(EXTRA_USER) ?: throw IllegalArgumentException("need user")
-    start(room, user)
+    name_text.text = getString(R.string.call_my_name, "genius_murdock")
+    count_text.text = getString(R.string.call_no_participant, 0)
+
+    hang_button.setOnClickListener {
+      finish()
+    }
   }
 
-  fun start(room: String, user: String) {
-    signaling = CsioSignaling(user, object : CsioSignaling.Callback {
-      override fun onConnect() {
-        signaling?.start(room)
+  override fun onStart() {
+    super.onStart()
+    val room = intent.getStringExtra(EXTRA_ROOM) ?: throw IllegalArgumentException("need room")
+    csioRTC = CsioRTC(applicationContext, room, this)
+    csioRTC?.join()
+    csioRTC?.renderLocalVideo(local_video_view)
+  }
+
+  override fun onStop() {
+    super.onStop()
+    csioRTC?.leave()
+    finish()
+  }
+
+  // CsioRTC callback
+
+  override fun onCsioRTCConnect() {}
+  override fun onCsioRTCError() {}
+
+  override fun onCsioRTCPeerUpdate() {
+    runOnUiThread {
+      csioRTC?.let {
+        // update no. of participants
+        val peerIds = it.getPeerIds()
+        count_text.text = getString(R.string.call_no_participant, peerIds.size)
       }
+    }
+  }
 
-      override fun onConnectError() {
-
+  override fun onCsioRTCPeerVideoAvailable() {
+    runOnUiThread {
+      csioRTC?.let {
+        val peerIds = it.getAvailableVideoPeerIds()
+        if (showingVideoFromPeer == null && peerIds.isNotEmpty()) {
+          val peerId = peerIds.first()
+          it.renderRemoteVideo(peerId, remote_video_view)
+          showingVideoFromPeer = peerId
+        }
       }
-
-      override fun onPeerJoin(peerId: String) {
-      }
-
-      override fun onPeerLeave(peerId: String) {
-      }
-
-      override fun onMessage(fromId: String, message: String) {
-      }
-
-    })
+    }
   }
 }

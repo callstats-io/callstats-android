@@ -4,29 +4,61 @@
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:gravity="center"
+  android:background="@color/primary"
+  android:fitsSystemWindows="true"
   android:orientation="vertical"
-  android:padding="16dp"
   tools:context=".MainActivity">
 
-  <EditText
-    android:id="@+id/room"
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:padding="4dp"
+      android:text="@string/main_title"
+      android:textColor="@android:color/white"
+      android:textSize="28sp"
+      android:textStyle="bold"/>
+
+    <TextView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="10dp"
+      android:padding="4dp"
+      android:text="@string/main_subtitle"
+      android:textColor="@android:color/white"
+      android:textSize="14sp"/>
+
+    <EditText
+      android:id="@+id/room"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:hint="@string/main_room"
+      android:inputType="text"
+      android:textSize="20sp"
+      android:textStyle="bold"/>
+
+    <Button
+      android:id="@+id/submit"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:background="?selectableItemBackgroundBorderless"
+      android:text="@string/main_join"/>
+
+  </LinearLayout>
+
+  <TextView
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:hint="@string/main_room"
-    android:inputType="text"/>
-
-  <EditText
-    android:id="@+id/username"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:hint="@string/main_username"
-    android:inputType="text"/>
-
-  <Button
-    android:id="@+id/submit"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="@string/main_join"/>
+    android:gravity="center"
+    android:padding="4dp"
+    android:text="@string/main_footer"
+    android:textSize="12sp"/>
 
 </LinearLayout>
