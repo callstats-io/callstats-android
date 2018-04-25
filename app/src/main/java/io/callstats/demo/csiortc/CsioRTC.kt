@@ -78,6 +78,20 @@ class CsioRTC(context: Context, room: String, val callback: Callback) : CsioSign
     peerConnections.clear()
   }
 
+  /**
+   * Mute microphone
+   */
+  fun setMute(mute: Boolean) {
+    localAudioTrack?.setEnabled(!mute)
+  }
+
+  /**
+   * Enable or disable local video
+   */
+  fun setVideoEnable(enable: Boolean) {
+    localVideoTrack?.setEnabled(enable)
+  }
+
   // Video rendering
 
   /**

@@ -111,7 +111,7 @@
       android:layout_height="@dimen/call_button_size"
       android:layout_margin="@dimen/call_button_margin"
       android:background="@drawable/background_call_button"
-      android:src="@drawable/ic_call_mic_on"
+      android:src="@drawable/button_call_mic"
       android:tint="@android:color/white"
       tools:ignore="ContentDescription"/>
 
@@ -121,7 +121,7 @@
       android:layout_height="@dimen/call_button_size"
       android:layout_margin="@dimen/call_button_margin"
       android:background="@drawable/background_call_button"
-      android:src="@drawable/ic_call_video_on"
+      android:src="@drawable/button_call_video"
       android:tint="@android:color/white"
       tools:ignore="ContentDescription"/>
 

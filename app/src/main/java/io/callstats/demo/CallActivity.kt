@@ -21,9 +21,19 @@ class CallActivity : AppCompatActivity(), CsioRTC.Callback {
     name_text.text = getString(R.string.call_my_name, "genius_murdock")
     count_text.text = getString(R.string.call_no_participant, 0)
 
-    hang_button.setOnClickListener {
-      finish()
+    mic_button.setOnClickListener {
+      val selected = !it.isSelected
+      it.isSelected = selected
+      csioRTC?.setMute(selected)
     }
+
+    video_button.setOnClickListener {
+      val selected = !it.isSelected
+      it.isSelected = selected
+      csioRTC?.setVideoEnable(!selected)
+    }
+
+    hang_button.setOnClickListener { finish() }
   }
 
   override fun onStart() {
