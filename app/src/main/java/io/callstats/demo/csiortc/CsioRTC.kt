@@ -30,11 +30,15 @@ class CsioRTC(context: Context, room: String, val callback: Callback) : CsioSign
 
   private val signaling = CsioSignaling(room, this)
   private var localMediaStream: MediaStream? = null
+  private var localVideoCapturer: VideoCapturer? = null
+  private var localVideoSource: VideoSource? = null
   private var localVideoTrack: VideoTrack? = null
+  private var localAudioSource: AudioSource? = null
   private var localAudioTrack: AudioTrack? = null
 
-  private val rootEglBase = EglBase.create()
-  private val remoteRootEglBase = EglBase.create()
+  val localEglBase: EglBase = EglBase.create()
+  val remoteEglBase: EglBase = EglBase.create()
+
   private var peerConnections = mutableMapOf<String, PeerConnection>()
   private var peerVideoTracks = mutableMapOf<String, VideoTrack>()
 
@@ -43,7 +47,7 @@ class CsioRTC(context: Context, room: String, val callback: Callback) : CsioSign
         .createInitializationOptions()
     PeerConnectionFactory.initialize(opt)
     val factory = PeerConnectionFactory.builder().createPeerConnectionFactory()
-    factory.setVideoHwAccelerationOptions(rootEglBase.eglBaseContext, remoteRootEglBase.eglBaseContext)
+    factory.setVideoHwAccelerationOptions(localEglBase.eglBaseContext, remoteEglBase.eglBaseContext)
     factory
   }()
 
@@ -57,6 +61,7 @@ class CsioRTC(context: Context, room: String, val callback: Callback) : CsioSign
     val audioSource = peerConnectionFactory.createAudioSource(MediaConstraints())
     localAudioTrack = peerConnectionFactory.createAudioTrack(LOCAL_AUDIO_TRACK_LABEL, audioSource)
     localMediaStream?.addTrack(localAudioTrack)
+    localAudioSource = audioSource
 
     // video
     Utils.createCameraCapturer()?.let {
@@ -64,6 +69,8 @@ class CsioRTC(context: Context, room: String, val callback: Callback) : CsioSign
       it.startCapture(LOCAL_VIDEO_WIDTH, LOCAL_VIDEO_HEIGHT, LOCAL_VIDEO_FPS)
       localVideoTrack = peerConnectionFactory.createVideoTrack(LOCAL_VIDEO_TRACK_LABEL, videoSource)
       localMediaStream?.addTrack(localVideoTrack)
+      localVideoCapturer = it
+      localVideoSource = videoSource
     }
 
     // start the flow
@@ -75,7 +82,22 @@ class CsioRTC(context: Context, room: String, val callback: Callback) : CsioSign
    */
   fun leave() {
     signaling.stop()
+
+    peerConnections.forEach { _, connection ->
+      connection.removeStream(localMediaStream)
+      connection.dispose()
+    }
     peerConnections.clear()
+    peerVideoTracks.clear()
+
+    localMediaStream?.dispose()
+    localAudioSource?.dispose()
+    localVideoCapturer?.dispose()
+    localVideoSource?.dispose()
+
+    localEglBase.release()
+    remoteEglBase.release()
+    peerConnectionFactory.dispose()
   }
 
   /**
@@ -98,22 +120,19 @@ class CsioRTC(context: Context, room: String, val callback: Callback) : CsioSign
    * Render local video to surface view
    */
   fun renderLocalVideo(view: SurfaceViewRenderer) {
-    localVideoTrack?.let {
-      view.init(rootEglBase.eglBaseContext, null)
-      view.setMirror(true)
-      it.addRenderer(VideoRenderer(view))
-    }
+    localVideoTrack?.addRenderer(VideoRenderer(view))
   }
 
   /**
-   * Render remote video to surface view
+   * Render remote video to the renderer
    * Please note that this should be called in main thread only
    */
-  fun renderRemoteVideo(peerId: String, view: SurfaceViewRenderer) {
-    peerVideoTracks[peerId]?.let {
-      view.init(remoteRootEglBase.eglBaseContext, null)
-      it.addRenderer(VideoRenderer(view))
-    }
+  fun addRemoteVideoRenderer(peerId: String, renderer: VideoRenderer) {
+    peerVideoTracks[peerId]?.addRenderer(renderer)
+  }
+
+  fun removeRemoteVideoRenderer(peerId: String, renderer: VideoRenderer) {
+    peerVideoTracks[peerId]?.removeRenderer(renderer)
   }
 
   // peers

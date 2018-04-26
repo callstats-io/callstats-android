@@ -68,7 +68,6 @@ class CsioSignaling(
 
   /**
    * Join the room
-   * @param room room name
    */
   fun start() {
     socket.connect()
@@ -80,6 +79,7 @@ class CsioSignaling(
   fun stop() {
     socket.emit(EVENT_LEAVE)
     socket.disconnect()
+    socket.off()
   }
 
   /**
