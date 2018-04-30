@@ -8,4 +8,6 @@
   <color name="call_button_pressed_background">#ccc</color>
   <color name="call_hang_button_background">#d64646</color>
   <color name="call_hang_button_pressed_background">#ab2d2d</color>
+
+  <color name="chat_input_background">#ccc</color>
 </resources>

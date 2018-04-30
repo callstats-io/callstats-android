@@ -4,14 +4,22 @@ import android.content.Context
 import android.util.Log
 import org.json.JSONObject
 import org.webrtc.*
+import java.nio.ByteBuffer
 
-class CsioRTC(context: Context, room: String, val callback: Callback) : CsioSignaling.Callback {
+class CsioRTC(
+    context: Context,
+    room: String,
+    val callback: Callback,
+    private val alias: String? = null) : CsioSignaling.Callback {
 
   companion object {
     private const val TAG = "CsioRTC"
     private const val LOCAL_MEDIA_LABEL = "ARDAMS"
     private const val LOCAL_VIDEO_TRACK_LABEL = "ARDAMSv0"
     private const val LOCAL_AUDIO_TRACK_LABEL = "ARDAMSa0"
+    private const val DATA_CHANNEL_LABEL = "chat"
+    private const val DATA_CHANNEL_NAME_KEY = "aliseName"
+    private const val DATA_CHANNEL_MESSAGE_KEY = "message"
 
     private const val MESSAGE_ICE_KEY = "ice"
     private const val MESSAGE_OFFER_KEY = "offer"
@@ -26,6 +34,7 @@ class CsioRTC(context: Context, room: String, val callback: Callback) : CsioSign
     fun onCsioRTCError()
     fun onCsioRTCPeerUpdate()
     fun onCsioRTCPeerVideoAvailable()
+    fun onCsioRTCPeerMessage(peerId: String, message: String)
   }
 
   private val signaling = CsioSignaling(room, this)
@@ -41,6 +50,7 @@ class CsioRTC(context: Context, room: String, val callback: Callback) : CsioSign
 
   private var peerConnections = mutableMapOf<String, PeerConnection>()
   private var peerVideoTracks = mutableMapOf<String, VideoTrack>()
+  private var peerDataChannels = mutableMapOf<String, DataChannel>()
 
   private val peerConnectionFactory: PeerConnectionFactory = {
     val opt = PeerConnectionFactory.InitializationOptions.builder(context)
@@ -83,12 +93,7 @@ class CsioRTC(context: Context, room: String, val callback: Callback) : CsioSign
   fun leave() {
     signaling.stop()
 
-    peerConnections.forEach { _, connection ->
-      connection.removeStream(localMediaStream)
-      connection.dispose()
-    }
-    peerConnections.clear()
-    peerVideoTracks.clear()
+    peerConnections.keys.forEach { disconnectPeer(it) }
 
     localMediaStream?.dispose()
     localAudioSource?.dispose()
@@ -151,14 +156,30 @@ class CsioRTC(context: Context, room: String, val callback: Callback) : CsioSign
     return peerVideoTracks.keys.toTypedArray()
   }
 
-  // Offer & Answer
+  // data channel
+
+  /**
+   * Send message to everyone in the room
+   */
+  fun sendMessage(message: String) {
+    val string = "{\"$DATA_CHANNEL_MESSAGE_KEY\": \"$message\"" +
+        if (alias.isNullOrBlank()) "}" else ",\"$DATA_CHANNEL_NAME_KEY\":\"$alias\"}"
+    val buffer = ByteBuffer.wrap(string.toByteArray())
+    val data = DataChannel.Buffer(buffer, false)
+    peerDataChannels.forEach { _, dataChannel -> dataChannel.send(data) }
+  }
+
+  // Peer connection
 
   private fun offer(peerId: String) {
     val peerConnection = peerConnectionFactory.createPeerConnection(emptyList(), PeerObserver(peerId))
     peerConnection?.let {
       it.addStream(localMediaStream)
-      peerConnections[peerId] = it
       it.createOffer(SdpObserver(peerId), MediaConstraints())
+      val channel = it.createDataChannel(DATA_CHANNEL_LABEL, DataChannel.Init())
+      channel.registerObserver(DataChannelObserver(peerId))
+      peerDataChannels[peerId] = channel
+      peerConnections[peerId] = it
       callback.onCsioRTCPeerUpdate()
     }
   }
@@ -173,6 +194,18 @@ class CsioRTC(context: Context, room: String, val callback: Callback) : CsioSign
       it.createAnswer(observer, MediaConstraints())
       callback.onCsioRTCPeerUpdate()
     }
+  }
+
+  private fun disconnectPeer(peerId: String) {
+    peerDataChannels[peerId]?.dispose()
+    peerConnections[peerId]?.let {
+      it.removeStream(localMediaStream)
+      it.dispose()
+    }
+    peerDataChannels.remove(peerId)
+    peerVideoTracks.remove(peerId)
+    peerConnections.remove(peerId)
+    callback.onCsioRTCPeerUpdate()
   }
 
   // sdp observer
@@ -215,7 +248,12 @@ class CsioRTC(context: Context, room: String, val callback: Callback) : CsioSign
       }
     }
 
-    override fun onDataChannel(channel: DataChannel?) {}
+    override fun onDataChannel(channel: DataChannel) {
+      Log.i(TAG, "onDataChannel")
+      channel.registerObserver(DataChannelObserver(peerId))
+      peerDataChannels[peerId] = channel
+    }
+
     override fun onIceConnectionReceivingChange(p0: Boolean) {}
     override fun onIceConnectionChange(state: PeerConnection.IceConnectionState?) {}
     override fun onIceGatheringChange(state: PeerConnection.IceGatheringState?) {}
@@ -224,6 +262,24 @@ class CsioRTC(context: Context, room: String, val callback: Callback) : CsioSign
     override fun onRemoveStream(stream: MediaStream?) {}
     override fun onRenegotiationNeeded() {}
     override fun onAddTrack(receiver: RtpReceiver?, streams: Array<out MediaStream>?) {}
+  }
+
+  // Data channel observer
+
+  private inner class DataChannelObserver(val peerId: String) : DataChannel.Observer {
+    override fun onMessage(buffer: DataChannel.Buffer) {
+      Log.i(TAG, "receive message from $peerId")
+      val bytes = ByteArray(buffer.data.remaining())
+      buffer.data.get(bytes)
+      val message = String(bytes)
+      val json = JSONObject(message)
+      callback.onCsioRTCPeerMessage(
+          json.optString(DATA_CHANNEL_NAME_KEY) ?: peerId,
+          json.getString(DATA_CHANNEL_MESSAGE_KEY))
+    }
+
+    override fun onBufferedAmountChange(p0: Long) {}
+    override fun onStateChange() {}
   }
 
   // Signaling callback
@@ -243,9 +299,7 @@ class CsioRTC(context: Context, room: String, val callback: Callback) : CsioSign
   }
 
   override fun onPeerLeave(peerId: String) {
-    peerVideoTracks.remove(peerId)
-    peerConnections.remove(peerId)
-    callback.onCsioRTCPeerUpdate()
+    disconnectPeer(peerId)
   }
 
   override fun onMessage(fromId: String, message: String) {

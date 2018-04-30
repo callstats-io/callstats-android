@@ -1,159 +1,173 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<android.support.v4.widget.DrawerLayout
+  android:id="@+id/drawer_layout"
   xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
-  android:layout_height="match_parent"
-  android:background="@color/primary"
-  android:clipChildren="false"
-  android:clipToPadding="false"
-  android:orientation="vertical"
-  android:padding="16dp">
+  android:layout_height="match_parent">
 
-  <RelativeLayout
+  <LinearLayout
     android:layout_width="match_parent"
-    android:layout_height="0dp"
-    android:layout_weight="1"
+    android:layout_height="match_parent"
+    android:background="@color/primary"
     android:clipChildren="false"
     android:clipToPadding="false"
-    android:fitsSystemWindows="true">
+    android:orientation="vertical"
+    android:padding="16dp">
 
-    <android.support.v7.widget.CardView
-      android:id="@+id/remote_video_layout"
-      android:layout_width="wrap_content"
-      android:layout_height="match_parent"
-      app:cardCornerRadius="8dp"
-      app:cardElevation="6dp">
-
-      <org.webrtc.SurfaceViewRenderer
-        android:id="@+id/remote_video_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
-    </android.support.v7.widget.CardView>
-
-  </RelativeLayout>
-
-  <LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="16dp"
-    android:clipToPadding="false">
-
-    <android.support.v7.widget.CardView
-      android:layout_width="0dp"
-      android:layout_height="match_parent"
+    <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
       android:layout_weight="1"
-      android:theme="@style/Theme.AppCompat.Light"
-      app:cardBackgroundColor="@android:color/white"
-      app:cardCornerRadius="8dp"
-      app:cardElevation="18dp">
+      android:clipChildren="false"
+      android:clipToPadding="false"
+      android:fitsSystemWindows="true">
 
-      <LinearLayout
-        android:layout_width="match_parent"
+      <android.support.v7.widget.CardView
+        android:id="@+id/remote_video_layout"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:padding="16dp"
-        android:orientation="vertical">
+        app:cardCornerRadius="8dp"
+        app:cardElevation="6dp">
 
-        <TextView
-          android:id="@+id/name_text"
+        <org.webrtc.SurfaceViewRenderer
+          android:id="@+id/remote_video_view"
           android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:text="@string/call_my_name"/>
+          android:layout_height="match_parent"/>
 
-        <TextView
-          android:id="@+id/count_text"
+      </android.support.v7.widget.CardView>
+
+    </RelativeLayout>
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="16dp"
+      android:clipToPadding="false">
+
+      <android.support.v7.widget.CardView
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:theme="@style/Theme.AppCompat.Light"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="18dp">
+
+        <LinearLayout
           android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:text="@string/call_no_participant"/>
+          android:layout_height="match_parent"
+          android:orientation="vertical"
+          android:padding="16dp">
 
-      </LinearLayout>
+          <TextView
+            android:id="@+id/name_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/call_my_name"/>
 
-    </android.support.v7.widget.CardView>
+          <TextView
+            android:id="@+id/count_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/call_no_participant"/>
 
-    <android.support.v7.widget.CardView
-      android:id="@+id/local_video_layout"
-      android:layout_width="@dimen/call_video_local_width"
-      android:layout_height="@dimen/call_video_local_height"
-      android:layout_marginStart="16dp"
-      app:cardCornerRadius="8dp"
-      app:cardElevation="18dp">
+        </LinearLayout>
 
-      <org.webrtc.SurfaceViewRenderer
-        android:id="@+id/local_video_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+      </android.support.v7.widget.CardView>
 
-    </android.support.v7.widget.CardView>
+      <android.support.v7.widget.CardView
+        android:id="@+id/local_video_layout"
+        android:layout_width="@dimen/call_video_local_width"
+        android:layout_height="@dimen/call_video_local_height"
+        android:layout_marginStart="16dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="18dp">
+
+        <org.webrtc.SurfaceViewRenderer
+          android:id="@+id/local_video_view"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"/>
+
+      </android.support.v7.widget.CardView>
+
+    </LinearLayout>
+
+    <LinearLayout
+      android:id="@+id/control_layout"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="16dp"
+      android:gravity="center">
+
+      <ImageButton
+        android:id="@+id/left_button"
+        android:layout_width="@dimen/call_button_size"
+        android:layout_height="@dimen/call_button_size"
+        android:background="?selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_left"
+        android:tint="@android:color/white"
+        tools:ignore="ContentDescription"/>
+
+      <ImageButton
+        android:id="@+id/mic_button"
+        android:layout_width="@dimen/call_button_size"
+        android:layout_height="@dimen/call_button_size"
+        android:layout_margin="@dimen/call_button_margin"
+        android:background="@drawable/background_call_button"
+        android:src="@drawable/button_call_mic"
+        android:tint="@android:color/white"
+        tools:ignore="ContentDescription"/>
+
+      <ImageButton
+        android:id="@+id/video_button"
+        android:layout_width="@dimen/call_button_size"
+        android:layout_height="@dimen/call_button_size"
+        android:layout_margin="@dimen/call_button_margin"
+        android:background="@drawable/background_call_button"
+        android:src="@drawable/button_call_video"
+        android:tint="@android:color/white"
+        tools:ignore="ContentDescription"/>
+
+      <ImageButton
+        android:id="@+id/chat_button"
+        android:layout_width="@dimen/call_button_size"
+        android:layout_height="@dimen/call_button_size"
+        android:layout_margin="@dimen/call_button_margin"
+        android:background="@drawable/background_call_button"
+        android:src="@drawable/ic_chat"
+        android:tint="@android:color/white"
+        tools:ignore="ContentDescription"/>
+
+      <ImageButton
+        android:id="@+id/hang_button"
+        android:layout_width="@dimen/call_button_size"
+        android:layout_height="@dimen/call_button_size"
+        android:layout_margin="@dimen/call_button_margin"
+        android:background="@drawable/background_call_hang_button"
+        android:src="@drawable/ic_call_end"
+        android:tint="@android:color/white"
+        tools:ignore="ContentDescription"/>
+
+      <ImageButton
+        android:id="@+id/right_button"
+        android:layout_width="@dimen/call_button_size"
+        android:layout_height="@dimen/call_button_size"
+        android:background="?selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_right"
+        android:tint="@android:color/white"
+        tools:ignore="ContentDescription"/>
+
+    </LinearLayout>
 
   </LinearLayout>
 
-  <LinearLayout
-    android:id="@+id/control_layout"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="16dp"
-    android:gravity="center">
+  <include
+    android:id="@+id/chat_layout"
+    layout="@layout/drawer_chat"
+    android:layout_width="250dp"
+    android:layout_height="match_parent"
+    android:layout_gravity="end"/>
 
-    <ImageButton
-      android:id="@+id/left_button"
-      android:layout_width="@dimen/call_button_size"
-      android:layout_height="@dimen/call_button_size"
-      android:background="?selectableItemBackgroundBorderless"
-      android:src="@drawable/ic_left"
-      android:tint="@android:color/white"
-      tools:ignore="ContentDescription"/>
-
-    <ImageButton
-      android:id="@+id/mic_button"
-      android:layout_width="@dimen/call_button_size"
-      android:layout_height="@dimen/call_button_size"
-      android:layout_margin="@dimen/call_button_margin"
-      android:background="@drawable/background_call_button"
-      android:src="@drawable/button_call_mic"
-      android:tint="@android:color/white"
-      tools:ignore="ContentDescription"/>
-
-    <ImageButton
-      android:id="@+id/video_button"
-      android:layout_width="@dimen/call_button_size"
-      android:layout_height="@dimen/call_button_size"
-      android:layout_margin="@dimen/call_button_margin"
-      android:background="@drawable/background_call_button"
-      android:src="@drawable/button_call_video"
-      android:tint="@android:color/white"
-      tools:ignore="ContentDescription"/>
-
-    <ImageButton
-      android:id="@+id/chat_button"
-      android:layout_width="@dimen/call_button_size"
-      android:layout_height="@dimen/call_button_size"
-      android:layout_margin="@dimen/call_button_margin"
-      android:background="@drawable/background_call_button"
-      android:src="@drawable/ic_chat"
-      android:tint="@android:color/white"
-      tools:ignore="ContentDescription"/>
-
-    <ImageButton
-      android:id="@+id/hang_button"
-      android:layout_width="@dimen/call_button_size"
-      android:layout_height="@dimen/call_button_size"
-      android:layout_margin="@dimen/call_button_margin"
-      android:background="@drawable/background_call_hang_button"
-      android:src="@drawable/ic_call_end"
-      android:tint="@android:color/white"
-      tools:ignore="ContentDescription"/>
-
-    <ImageButton
-      android:id="@+id/right_button"
-      android:layout_width="@dimen/call_button_size"
-      android:layout_height="@dimen/call_button_size"
-      android:background="?selectableItemBackgroundBorderless"
-      android:src="@drawable/ic_right"
-      android:tint="@android:color/white"
-      tools:ignore="ContentDescription"/>
-
-  </LinearLayout>
-
-</LinearLayout>
+</android.support.v4.widget.DrawerLayout>
