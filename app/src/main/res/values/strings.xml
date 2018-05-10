@@ -1,5 +1,13 @@
 <resources>
   <string name="app_name">callstats-demo</string>
-  <string name="main_room">Room</string>
-  <string name="main_join">OK</string>
+  <string name="main_title">Bonjour</string>
+  <string name="main_subtitle">No hassle, just people</string>
+  <string name="main_room">Meeting name</string>
+  <string name="main_join">Join</string>
+  <string name="main_error_input">Please choose room</string>
+  <string name="main_error_permission">Please allow app to use microphone in call</string>
+  <string name="main_footer">Brought to you by Callstats.io</string>
+  <string name="call_my_name">Your name : %s</string>
+  <string name="call_no_participant">No. of participant : %d</string>
+  <string name="chat_send_message_hint">Send a message</string>
 </resources>

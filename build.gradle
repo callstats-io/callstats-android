@@ -8,6 +8,7 @@ buildscript {
     kotlinVersion = '1.2.30'
     supportVersion = '27.1.1'
     junitVersion = '4.12'
+    socketIoVersion = '1.0.0'
     webRtcVersion = '1.0.22672'
   }
 
@@ -16,7 +17,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:3.1.1'
+    classpath 'com.android.tools.build:gradle:3.1.2'
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
 
     // NOTE: Do not place your application dependencies here; they belong

@@ -2,10 +2,12 @@
 <resources>
   <color name="primary">#602f97</color>
   <color name="primary_dark">#3F2370</color>
-  <color name="accent">#602f97</color>
+  <color name="accent">#3F2370</color>
 
   <color name="call_button_background">#fff</color>
   <color name="call_button_pressed_background">#ccc</color>
   <color name="call_hang_button_background">#d64646</color>
   <color name="call_hang_button_pressed_background">#ab2d2d</color>
+
+  <color name="chat_input_background">#ccc</color>
 </resources>
