@@ -22,8 +22,8 @@ abstract class Event {
   internal var timestamp: Long = 0L
   internal var originID: String? = null
 
-  open fun hostname(): String {
-    return "events.callstats.io"
+  open fun url(): String {
+    return "https://events.callstats.io"
   }
 
   abstract fun path(): String
@@ -44,12 +44,11 @@ abstract class Event {
 
     // url
     val path = when (this) {
-      is TokenRequest -> path()
       is SessionEvent -> "v1/apps/$appID/conferences/$confID/$ucID/events/${path()}"
       is AuthenticatedEvent -> "v1/apps/$appID/conferences/$confID"
-      else -> throw IllegalArgumentException("Event type is incorrect")
+      else -> path()
     }
-    val url = "https://${hostname()}/$path"
+    val url = "${url()}/$path"
 
     // content
     val content = if (this is TokenRequest) {
