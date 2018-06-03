@@ -26,7 +26,9 @@ abstract class Event {
     return "https://events.callstats.io"
   }
 
-  abstract fun path(): String
+  open fun path(): String {
+    return ""
+  }
 
   /**
    * Convert event to okHttp request
@@ -71,12 +73,28 @@ abstract class Event {
   }
 }
 
+/**
+ * Event that can be sent after authenticated
+ */
 abstract class AuthenticatedEvent : Event() {
   @Transient var appID: String? = null
   @Transient var confID: String? = null
   @Transient var token: String? = null
 }
 
+/**
+ * Event that can be sent after session created
+ */
 abstract class SessionEvent: AuthenticatedEvent() {
   @Transient var ucID: String? = null
 }
+
+/**
+ * Event to create session
+ */
+interface CreateSessionEvent
+
+/**
+ * Event that do authentication
+ */
+interface AuthenticationEvent

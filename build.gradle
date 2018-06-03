@@ -12,6 +12,7 @@ buildscript {
     webRtcVersion = '1.0.22672'
     okhttpVersion = '3.9.0'
     gsonVersion = '2.8.5'
+    mockitoVersion = '2.18.3'
   }
 
   repositories {

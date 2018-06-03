@@ -25,50 +25,47 @@ class EventSendingRunnableTest {
     val response = MockResponse().setBody("{}")
     server.enqueue(response)
 
-    val event = TestEvent(server.url("").toString())
-    val request = event.toRequest(gson)
-    val runnable = EventSendingRunnable(client, request)
+    val event = object : Event() {
+      override fun url(): String = server.url("").toString()
+    }
+    val runnable = EventSendingRunnable(client, event, gson)
 
     var isSuccess = false
-    var responseString: String? = null
-    runnable.callback = { success, body ->
+    var responseMap: Map<String, Any?>? = null
+    runnable.callback = { _, success, map ->
       isSuccess = success
-      responseString = body
+      responseMap = map
     }
     runnable.run()
 
     assertTrue(isSuccess)
-    assertEquals("{}", responseString)
+    assertEquals(0, responseMap?.size)
   }
 
   @Test
   fun failResponse() {
-    val response = MockResponse().setBody("{}").setResponseCode(500)
+    val response = MockResponse().setBody("{'error': 'error'}").setResponseCode(500)
     server.enqueue(response)
 
-    val event = TestEvent(server.url("").toString())
-    val request = event.toRequest(gson)
-    val runnable = EventSendingRunnable(client, request)
+    val event = object : Event() {
+      override fun url(): String = server.url("").toString()
+    }
+    val runnable = EventSendingRunnable(client, event, gson)
 
     var isSuccess = false
-    var responseString: String? = null
-    runnable.callback = { success, body ->
+    var responseMap: Map<String, Any?>? = null
+    runnable.callback = { _, success, map ->
       isSuccess = success
-      responseString = body
+      responseMap = map
     }
     runnable.run()
 
     assertFalse(isSuccess)
-    assertEquals("{}", responseString)
+    assertEquals(1, responseMap?.size)
   }
 
   @After
   fun tearDown() {
     server.shutdown()
-  }
-
-  class TestEvent(private val testUrl: String): Event() {
-    override fun url(): String = testUrl
-    override fun path(): String = ""
   }
 }

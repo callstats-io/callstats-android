@@ -1,27 +1,33 @@
 package io.callstats.event
 
+import com.google.gson.Gson
 import okhttp3.OkHttpClient
-import okhttp3.Request
+import com.google.gson.reflect.TypeToken
 
 /**
  * Runnable class to send the event in thread pool executor
  * @param client OkHttpClient
- * @param request request object to be sent
+ * @param event Event to be sent
+ * @param gson Gson to convert between json string and object
  */
 class EventSendingRunnable(
     private val client: OkHttpClient,
-    private val request: Request) : Runnable {
+    internal val event: Event,
+    private val gson: Gson) : Runnable {
 
-  var callback: (Boolean, String?) -> Unit = { _, _ -> }
+  var callback: (Event, Boolean, Map<String, Any?>?) -> Unit = { _, _, _ -> }
 
   override fun run() {
     try {
+      val request = event.toRequest(gson)
       val response = client.newCall(request).execute()
-      callback(response.isSuccessful, response.body()?.string())
+      val type = object : TypeToken<Map<String, Any?>>() {}.type
+      val map: Map<String, Any?> = response.body()?.string().let { gson.fromJson(it, type) }
+      callback(event, response.isSuccessful, map)
       response.close()
     } catch (ex: Exception) {
       println(ex.localizedMessage)
-      callback(false, null)
+      callback(event, false, null)
     }
   }
 }
