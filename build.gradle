@@ -10,6 +10,8 @@ buildscript {
     junitVersion = '4.12'
     socketIoVersion = '1.0.0'
     webRtcVersion = '1.0.22672'
+    okhttpVersion = '3.9.0'
+    gsonVersion = '2.8.5'
   }
 
   repositories {

@@ -31,4 +31,6 @@ class FabricSetupFailedEvent(
    * Default is "peer".
    */
   var remoteEndpointType = "peer"
+
+  override fun path(): String = super.path() + "/setupfailed"
 }

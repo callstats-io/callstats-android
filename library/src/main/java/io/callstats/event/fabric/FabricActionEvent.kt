@@ -10,4 +10,6 @@ package io.callstats.event.fabric
 class FabricActionEvent(
     val remoteID: String,
     val connectionID: String,
-    val eventType: String) : FabricEvent()
+    val eventType: String) : FabricEvent() {
+  override fun path(): String = super.path() + "/actions"
+}

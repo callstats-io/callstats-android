@@ -14,4 +14,6 @@ class FabricStateChangeEvent(
     val connectionID: String,
     val prevState: String,
     val newState: String,
-    val changedState: String) : FabricEvent()
+    val changedState: String) : FabricEvent() {
+  override fun path(): String = super.path() + "/statechange"
+}

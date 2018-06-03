@@ -19,4 +19,6 @@ class FabricDroppedEvent(
     val delay: Int) : FabricEvent()
 {
   val currIceConnectionState = "failed"
+
+  override fun path(): String = super.path() + "/status"
 }
