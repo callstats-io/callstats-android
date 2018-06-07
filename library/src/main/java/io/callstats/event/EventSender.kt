@@ -3,29 +3,29 @@ package io.callstats.event
 import com.google.gson.Gson
 import okhttp3.OkHttpClient
 import java.util.*
-import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.ExecutorService
 
 /**
  * Event queue for sending events to server
  */
-class EventSender(
+internal open class EventSender(
     private val client: OkHttpClient,
-    private val executor: ThreadPoolExecutor,
+    private val executor: ExecutorService,
     private val appID: String,
-    private val confID: String,
     private val localID: String,
     private val deviceID: String,
     private val originID: String? = null,
     private val gson: Gson = Gson()) {
 
   private var token: String? = null
+  private var confID: String? = null
   private var ucID: String? = null
 
   // queue to wait before state is ready
   internal val authenticatedQueue = LinkedList<Event>()
   internal val sessionQueue = LinkedList<Event>()
 
-  fun send(event: Event) {
+  open fun send(event: Event) {
     event.localID = localID
     event.deviceID = deviceID
     event.originID = originID
@@ -48,10 +48,12 @@ class EventSender(
     // apply session information
     (event as? AuthenticatedEvent)?.let {
       it.appID = appID
-      it.confID = confID
       it.token = token
     }
-    (event as? SessionEvent)?.ucID = ucID
+    (event as? SessionEvent)?.let {
+      it.ucID = ucID
+      it.confID = confID
+    }
 
     // send event
     val runnable = EventSendingRunnable(client, event, gson)

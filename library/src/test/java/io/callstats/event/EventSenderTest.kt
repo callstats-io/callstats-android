@@ -1,5 +1,6 @@
 package io.callstats.event
 
+import com.nhaarman.mockito_kotlin.whenever
 import io.callstats.event.fabric.FabricTerminatedEvent
 import io.callstats.event.user.UserJoinEvent
 import okhttp3.OkHttpClient
@@ -24,7 +25,7 @@ class EventSenderTest {
   @Before
   fun setup() {
     MockitoAnnotations.initMocks(this)
-    sender = EventSender(client, executor, "app1", "conf1", "local1", "device1")
+    sender = EventSender(client, executor, "app1", "local1", "device1")
   }
 
   @Test
@@ -58,7 +59,7 @@ class EventSenderTest {
 
   @Test
   fun sendEventsInCorrectOrder() {
-    `when`(executor.execute(any()))
+    whenever(executor.execute(any()))
         .then {
           val runnable = (it.getArgument(0) as EventSendingRunnable)
           val map = when {

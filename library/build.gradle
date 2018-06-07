@@ -26,7 +26,9 @@ dependencies {
   implementation "com.squareup.okhttp3:okhttp:$okhttpVersion"
   implementation "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
   implementation "com.google.code.gson:gson:$gsonVersion"
+  compileOnly "org.webrtc:google-webrtc:$webRtcVersion"
+
   testImplementation "junit:junit:$junitVersion"
-  testImplementation "org.mockito:mockito-core:$mockitoVersion"
+  testImplementation "com.nhaarman:mockito-kotlin:$mockitoKotlinVersion"
   testImplementation "com.squareup.okhttp3:mockwebserver:$okhttpVersion"
 }

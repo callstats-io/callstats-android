@@ -10,7 +10,7 @@ import com.google.gson.reflect.TypeToken
  * @param event Event to be sent
  * @param gson Gson to convert between json string and object
  */
-class EventSendingRunnable(
+internal class EventSendingRunnable(
     private val client: OkHttpClient,
     internal val event: Event,
     private val gson: Gson) : Runnable {
