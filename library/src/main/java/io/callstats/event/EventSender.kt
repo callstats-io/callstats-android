@@ -64,6 +64,7 @@ internal open class EventSender(
           sendAllInQueue(authenticatedQueue)
         } else if (sentEvent is CreateSessionEvent) {
           ucID = response["ucID"] as String
+          confID = sentEvent.confID
           sendAllInQueue(sessionQueue)
         }
       }

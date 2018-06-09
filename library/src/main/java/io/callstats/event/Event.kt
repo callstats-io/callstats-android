@@ -37,17 +37,17 @@ abstract class Event {
     // check
     if (this is AuthenticatedEvent) {
       checkNotNull(appID)
-      checkNotNull(confID)
       checkNotNull(token)
     }
     if (this is SessionEvent) {
       checkNotNull(ucID)
+      checkNotNull(confID)
     }
 
     // url
     val path = when (this) {
       is SessionEvent -> "v1/apps/$appID/conferences/$confID/$ucID/events/${path()}"
-      is AuthenticatedEvent -> "v1/apps/$appID/conferences/$confID"
+      is CreateSessionEvent -> "v1/apps/$appID/conferences/$confID"
       else -> path()
     }
     val url = "${url()}/$path"
@@ -78,7 +78,6 @@ abstract class Event {
  */
 abstract class AuthenticatedEvent : Event() {
   @Transient var appID: String? = null
-  @Transient var confID: String? = null
   @Transient var token: String? = null
 }
 
@@ -87,14 +86,20 @@ abstract class AuthenticatedEvent : Event() {
  */
 abstract class SessionEvent: AuthenticatedEvent() {
   @Transient var ucID: String? = null
+  @Transient var confID: String? = null
 }
 
 /**
  * Event to create session
  */
-interface CreateSessionEvent
+abstract class CreateSessionEvent: AuthenticatedEvent() {
+  @Transient var confID: String? = null
+}
 
 /**
  * Event that do authentication
  */
-interface AuthenticationEvent
+interface AuthenticationEvent {
+  val code: String
+  val clientID: String
+}

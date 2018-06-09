@@ -48,7 +48,7 @@ class Callstats(appID: String, localID: String, deviceID: String, jwt: String, p
    * @param confID local conference identifier for this call session
    */
   fun startSession(confID: String) {
-    sender.send(UserJoinEvent(clientVersion).apply { this.confID = confID })
+    sender.send(UserJoinEvent(confID, clientVersion).apply { this.confID = confID })
   }
 
   /**

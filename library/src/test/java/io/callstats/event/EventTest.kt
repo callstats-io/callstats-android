@@ -26,7 +26,7 @@ class EventTest {
 
   @Test(expected = IllegalStateException::class)
   fun convertInvalidAuthenticatedEventToRequest() {
-    val event = UserJoinEvent()
+    val event = UserJoinEvent("conf1")
     event.toRequest(gson)
     event.appID = "app1"
     event.toRequest(gson)
@@ -36,9 +36,8 @@ class EventTest {
 
   @Test
   fun convertValidAuthenticatedEventToRequest() {
-    val event = UserJoinEvent()
+    val event = UserJoinEvent("conf1")
     event.appID = "app1"
-    event.confID = "conf1"
     event.token = "1234"
 
     val request = event.toRequest(gson)

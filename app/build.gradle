@@ -30,11 +30,14 @@ android {
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
+  implementation project(':library')
+
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlinVersion"
   implementation "com.android.support:appcompat-v7:$supportVersion"
   implementation "com.android.support:design:$supportVersion"
   implementation "com.android.support:cardview-v7:$supportVersion"
-
+  implementation "io.jsonwebtoken:jjwt:$jjwtVersion"
+  implementation "com.madgag.spongycastle:prov:$spongyCastleVersion"
   implementation "org.webrtc:google-webrtc:$webRtcVersion"
   implementation ("io.socket:socket.io-client:$socketIoVersion") {
     // excluding org.json which is provided by Android

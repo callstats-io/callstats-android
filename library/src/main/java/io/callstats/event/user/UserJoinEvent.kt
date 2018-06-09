@@ -1,6 +1,5 @@
 package io.callstats.event.user
 
-import io.callstats.event.AuthenticatedEvent
 import io.callstats.event.CreateSessionEvent
 import io.callstats.event.info.EndpointInfo
 
@@ -9,7 +8,9 @@ import io.callstats.event.info.EndpointInfo
  * or start a new conference. If there are no participants in the given conference then
  * a new conference will be created with the conferenceID provided.
  */
-class UserJoinEvent(appVersion: String? = null) : AuthenticatedEvent(), CreateSessionEvent {
+class UserJoinEvent(confID: String, appVersion: String? = null) : CreateSessionEvent() {
+
+  init { this.confID = confID }
 
   val endpointInfo = EndpointInfo(appVersion)
 

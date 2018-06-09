@@ -50,7 +50,7 @@ class EventSenderTest {
 
   @Test
   fun sendEventBeforeNeededState() {
-    sender.send(UserJoinEvent())
+    sender.send(UserJoinEvent("con1"))
     sender.send(FabricTerminatedEvent("remote1", "con1"))
     assertEquals(1, sender.authenticatedQueue.size)
     assertEquals(1, sender.sessionQueue.size)
@@ -72,8 +72,11 @@ class EventSenderTest {
 
     // send event in reverse order
     sender.send(object : SessionEvent() {})
-    sender.send(object : AuthenticatedEvent(), CreateSessionEvent {})
-    sender.send(object : Event(), AuthenticationEvent {})
+    sender.send(object : CreateSessionEvent() {})
+    sender.send(object : Event(), AuthenticationEvent {
+      override val code: String = "code"
+      override val clientID: String = "clientID"
+    })
 
     // verify that event sent in correct order
     val order = inOrder(executor)
