@@ -6,16 +6,19 @@ import io.callstats.event.user.UserJoinEvent
 import io.callstats.event.user.UserLeftEvent
 import io.callstats.interceptor.InterceptorManager
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 /**
  * Entry point for sending WebRTC stats to callstats.io
  */
-class Callstats(appID: String, localID: String, deviceID: String, jwt: String) {
+class Callstats(appID: String, localID: String, deviceID: String, jwt: String, private val clientVersion: String? = null) {
 
   internal open class Dependency {
-    open fun okhttpClient(): OkHttpClient = OkHttpClient()
+    open fun okhttpClient(): OkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
+        .build()
     open fun executor(): ExecutorService = Executors.newSingleThreadExecutor()
     open fun interceptorManager(): InterceptorManager = InterceptorManager(emptyArray())
     open fun eventSender(
@@ -45,7 +48,7 @@ class Callstats(appID: String, localID: String, deviceID: String, jwt: String) {
    * @param confID local conference identifier for this call session
    */
   fun startSession(confID: String) {
-    sender.send(UserJoinEvent().apply { this.confID = confID })
+    sender.send(UserJoinEvent(clientVersion).apply { this.confID = confID })
   }
 
   /**
