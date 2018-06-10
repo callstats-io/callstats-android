@@ -1,14 +1,23 @@
 package io.callstats.demo.csiortc
 
 import android.content.Context
+import android.util.Base64
 import android.util.Log
+import io.callstats.Callstats
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.SignatureAlgorithm
 import org.json.JSONObject
+import org.spongycastle.jce.provider.BouncyCastleProvider
 import org.webrtc.*
 import java.nio.ByteBuffer
+import java.security.KeyFactory
+import java.security.Security
+import java.security.spec.PKCS8EncodedKeySpec
 
 class CsioRTC(
     context: Context,
-    room: String,
+    private val room: String,
+    deviceID: String,
     val callback: Callback,
     private val alias: String? = null) : CsioSignaling.Callback {
 
@@ -27,10 +36,16 @@ class CsioRTC(
     private const val LOCAL_VIDEO_WIDTH = 800
     private const val LOCAL_VIDEO_HEIGHT = 600
     private const val LOCAL_VIDEO_FPS = 30
+
+    // this is for Jwt creation for demo only
+    init {
+      Security.insertProviderAt(BouncyCastleProvider(), 1)
+    }
   }
 
   interface Callback {
     fun onCsioRTCConnect()
+    fun onCsioRTCDisconnect()
     fun onCsioRTCError()
     fun onCsioRTCPeerUpdate()
     fun onCsioRTCPeerVideoAvailable()
@@ -61,10 +76,19 @@ class CsioRTC(
     factory
   }()
 
+  // callstats
+  private val callstats: Callstats
+
+  init {
+    callstats = initCallstats(deviceID)
+  }
+
   /**
    * Join the room and start the call
    */
   fun join() {
+    startCallstats(room)
+
     localMediaStream = peerConnectionFactory.createLocalMediaStream(LOCAL_MEDIA_LABEL)
 
     // audio
@@ -125,19 +149,19 @@ class CsioRTC(
    * Render local video to surface view
    */
   fun renderLocalVideo(view: SurfaceViewRenderer) {
-    localVideoTrack?.addRenderer(VideoRenderer(view))
+    localVideoTrack?.addSink(view)
   }
 
   /**
    * Render remote video to the renderer
    * Please note that this should be called in main thread only
    */
-  fun addRemoteVideoRenderer(peerId: String, renderer: VideoRenderer) {
-    peerVideoTracks[peerId]?.addRenderer(renderer)
+  fun addRemoteVideoRenderer(peerId: String, renderer: SurfaceViewRenderer) {
+    peerVideoTracks[peerId]?.addSink(renderer)
   }
 
-  fun removeRemoteVideoRenderer(peerId: String, renderer: VideoRenderer) {
-    peerVideoTracks[peerId]?.removeRenderer(renderer)
+  fun removeRemoteVideoRenderer(peerId: String, renderer: SurfaceViewRenderer) {
+    peerVideoTracks[peerId]?.removeSink(renderer)
   }
 
   // peers
@@ -326,5 +350,51 @@ class CsioRTC(
         peerConnections[fromId]?.setRemoteDescription(SdpObserver(fromId), sdp)
       }
     }
+  }
+
+  override fun onDisconnect() {
+    callback.onCsioRTCDisconnect()
+    stopCallstats()
+  }
+
+  // Callstats Analytic
+
+  private fun initCallstats(deviceID: String): Callstats {
+    // all of this Jwt creation should be done at server for security
+    // this is just for demo only
+    val appID = "710194177"
+    val localID = System.currentTimeMillis().toString()
+    val keyId = "d3d41c2f319f7f8dd6"
+
+    // create jwt
+    val key = """
+      MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgSb3qUpRoMfNVt4+r
+      9/QqHhyOrgid9g9ITQXKlCyD0juhRANCAARacoa2yLngi1vf6mhFJdORGA0oB3Zx
+      NMWsSJNQDhcWXF3QBewOogBNprSyMTki1ldZXPJ3aL8ilZGwsBb1ojFZ
+    """
+    val factory = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME)
+    val keypem = factory.generatePrivate(PKCS8EncodedKeySpec(Base64.decode(key, Base64.DEFAULT)))
+
+    val jwt = Jwts.builder()
+        .setClaims(mapOf(
+            "userID" to localID,
+            "appID" to appID,
+            "keyID" to keyId))
+        .signWith(SignatureAlgorithm.ES256, keypem)
+        .compact()
+
+    return Callstats(
+        appID,
+        localID,
+        deviceID,
+        jwt)
+  }
+
+  private fun startCallstats(room: String) {
+    callstats.startSession(room)
+  }
+
+  private fun stopCallstats() {
+    callstats.stopSession()
   }
 }

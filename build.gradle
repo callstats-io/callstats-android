@@ -9,7 +9,7 @@ buildscript {
     supportVersion = '27.1.1'
     junitVersion = '4.12'
     socketIoVersion = '1.0.0'
-    webRtcVersion = '1.0.22672'
+    webRtcVersion = '1.0.23546'
     okhttpVersion = '3.9.0'
     jjwtVersion = '0.9.0'
     spongyCastleVersion = '1.58.0.0'
