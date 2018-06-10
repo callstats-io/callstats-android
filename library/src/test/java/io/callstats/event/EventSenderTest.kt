@@ -2,6 +2,7 @@ package io.callstats.event
 
 import com.nhaarman.mockito_kotlin.whenever
 import io.callstats.event.fabric.FabricTerminatedEvent
+import io.callstats.event.user.UserAliveEvent
 import io.callstats.event.user.UserJoinEvent
 import okhttp3.OkHttpClient
 import org.junit.Assert.assertEquals
@@ -83,5 +84,11 @@ class EventSenderTest {
     order.verify(executor).execute(argThat{ (it as EventSendingRunnable).event is AuthenticationEvent })
     order.verify(executor).execute(argThat{ (it as EventSendingRunnable).event is CreateSessionEvent })
     order.verify(executor).execute(argThat{ (it as EventSendingRunnable).event is SessionEvent })
+  }
+
+  @Test
+  fun willNotSaveKeepAliveEvent() {
+    sender.send(UserAliveEvent())
+    assertEquals(0, sender.sessionQueue.size)
   }
 }

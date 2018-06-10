@@ -1,10 +1,12 @@
 package io.callstats
 
 import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.timeout
 import com.nhaarman.mockito_kotlin.verify
+import io.callstats.event.CreateSessionEvent
 import io.callstats.event.EventSender
+import io.callstats.event.KeepAliveEvent
 import io.callstats.event.auth.TokenRequest
-import io.callstats.event.user.UserJoinEvent
 import io.callstats.event.user.UserLeftEvent
 import okhttp3.OkHttpClient
 import org.junit.Before
@@ -18,6 +20,7 @@ class CallstatsTest {
   @Mock private lateinit var sender: EventSender
 
   private lateinit var callstats: Callstats
+  private val defaultConfig = CallstatsConfig()
 
   @Before
   fun setup() {
@@ -43,9 +46,17 @@ class CallstatsTest {
   }
 
   @Test
-  fun startSessionSendUserJoinEvent() {
+  fun startSessionSendSessionCreateEvent() {
     callstats.startSession("conf1")
-    verify(sender).send(any<UserJoinEvent>())
+    verify(sender).send(any<CreateSessionEvent>())
+  }
+
+  @Test
+  fun startSessionAlsoStartSendingKeepAlive() {
+    callstats.startSession("conf1")
+
+    val waitingTime = (defaultConfig.keepAlivePeriod + 5) * 1000L // wait more 5 sec
+    verify(sender, timeout(waitingTime)).send(any<KeepAliveEvent>())
   }
 
   @Test

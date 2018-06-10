@@ -35,6 +35,8 @@ internal open class EventSender(
 
     // if event needs session but not available yet, put in the queue
     if (event is SessionEvent && ucID == null) {
+      // no need to save the keep alive event
+      if (event is KeepAliveEvent) return
       sessionQueue.add(event)
       return
     }

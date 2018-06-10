@@ -90,6 +90,11 @@ abstract class SessionEvent: AuthenticatedEvent() {
 }
 
 /**
+ * Event to keep the session alive
+ */
+abstract class KeepAliveEvent: SessionEvent()
+
+/**
  * Event to create session
  */
 abstract class CreateSessionEvent: AuthenticatedEvent() {
