@@ -1,12 +1,14 @@
 package io.callstats
 
 import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.argWhere
 import com.nhaarman.mockito_kotlin.timeout
 import com.nhaarman.mockito_kotlin.verify
 import io.callstats.event.CreateSessionEvent
 import io.callstats.event.EventSender
 import io.callstats.event.KeepAliveEvent
 import io.callstats.event.auth.TokenRequest
+import io.callstats.event.fabric.FabricSetupFailedEvent
 import io.callstats.event.user.UserLeftEvent
 import okhttp3.OkHttpClient
 import org.junit.Before
@@ -63,5 +65,16 @@ class CallstatsTest {
   fun stopSessionSendUserLeftEvent() {
     callstats.stopSession()
     verify(sender).send(any<UserLeftEvent>())
+  }
+
+  @Test
+  fun reportErrorSendValidEvent() {
+    callstats.reportError(CallstatsError.MEDIA_PERMISSION, "msg1", "stack1")
+    verify(sender).send(argWhere {
+      it is FabricSetupFailedEvent
+          && it.reason == CallstatsError.MEDIA_PERMISSION.value
+          && it.message == "msg1"
+          && it.stack == "stack1"
+    })
   }
 }

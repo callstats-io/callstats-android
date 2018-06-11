@@ -2,6 +2,7 @@ package io.callstats
 
 import io.callstats.event.EventSender
 import io.callstats.event.auth.TokenRequest
+import io.callstats.event.fabric.FabricSetupFailedEvent
 import io.callstats.event.user.UserAliveEvent
 import io.callstats.event.user.UserJoinEvent
 import io.callstats.event.user.UserLeftEvent
@@ -70,6 +71,19 @@ class Callstats(
   fun stopSession() {
     stopKeepAlive()
     sender.send(UserLeftEvent())
+  }
+
+  // events
+
+  /**
+   * Report error
+   * @param type [CallstatsError]
+   */
+  fun reportError(type: CallstatsError, message: String? = null, stack: String? = null) {
+    sender.send(FabricSetupFailedEvent(type.value).apply {
+      this.message = message
+      this.stack = stack
+    })
   }
 
   // timers
