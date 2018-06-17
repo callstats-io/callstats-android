@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Base64
 import android.util.Log
 import io.callstats.Callstats
+import io.callstats.OnIceConnectionChange
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import org.json.JSONObject
@@ -198,6 +199,7 @@ class CsioRTC(
   private fun offer(peerId: String) {
     val peerConnection = peerConnectionFactory.createPeerConnection(emptyList(), PeerObserver(peerId))
     peerConnection?.let {
+      callstats.addNewFabric(it, peerId)
       it.addStream(localMediaStream)
       it.createOffer(SdpObserver(peerId), MediaConstraints())
       val channel = it.createDataChannel(DATA_CHANNEL_LABEL, DataChannel.Init())
@@ -211,6 +213,7 @@ class CsioRTC(
   private fun answer(peerId: String, offerSdp: SessionDescription) {
     val peerConnection = peerConnectionFactory.createPeerConnection(emptyList(), PeerObserver(peerId))
     peerConnection?.let {
+      callstats.addNewFabric(it, peerId)
       it.addStream(localMediaStream)
       peerConnections[peerId] = it
       val observer = SdpObserver(peerId)
@@ -279,7 +282,9 @@ class CsioRTC(
     }
 
     override fun onIceConnectionReceivingChange(p0: Boolean) {}
-    override fun onIceConnectionChange(state: PeerConnection.IceConnectionState?) {}
+    override fun onIceConnectionChange(state: PeerConnection.IceConnectionState) {
+      peerConnections[peerId]?.let { callstats.reportEvent(peerId, OnIceConnectionChange(state)) }
+    }
     override fun onIceGatheringChange(state: PeerConnection.IceGatheringState?) {}
     override fun onSignalingChange(state: PeerConnection.SignalingState?) {}
     override fun onIceCandidatesRemoved(candidates: Array<out IceCandidate>?) {}

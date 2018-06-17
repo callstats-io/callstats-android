@@ -19,7 +19,7 @@ internal open class EventManager(
 
   private var connectionID = ""
 
-  fun process(webRTCEvent: CallstatsWebRTCFunction) {
+  open fun process(webRTCEvent: CallstatsWebRTCFunction) {
     connection.getStats { report ->
       // create connection id
       if (connectionID.isEmpty()) connectionID = createConnectionID(report)

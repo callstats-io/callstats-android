@@ -55,7 +55,7 @@ class Callstats(
   private var aliveTimer: Timer? = null
 
   // connections
-  private val eventManagers = mutableMapOf<String, EventManager>()
+  internal val eventManagers = mutableMapOf<String, EventManager>()
 
   init {
     sender.send(TokenRequest(jwt, "$localID@$appID"))
@@ -80,6 +80,24 @@ class Callstats(
   }
 
   // events
+
+  /**
+   * Create new connection. Call this before [reportEvent]
+   * @param connection reporting PeerConnection object
+   * @param remoteUserID recipient's userID
+   */
+  fun addNewFabric(connection: PeerConnection, remoteUserID: String) {
+    if (eventManagers.containsKey(remoteUserID)) return
+    eventManagers[remoteUserID] = dependency.eventManager(sender, remoteUserID, connection)
+  }
+
+  /**
+   * Report normal WebRTC event from observer
+   * @param remoteUserID recipient's userID
+   */
+  fun reportEvent(remoteUserID: String, type: CallstatsWebRTCFunction) {
+    eventManagers[remoteUserID]?.process(type)
+  }
 
   /**
    * Report error

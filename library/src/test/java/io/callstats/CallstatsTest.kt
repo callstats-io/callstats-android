@@ -5,21 +5,26 @@ import com.nhaarman.mockito_kotlin.argWhere
 import com.nhaarman.mockito_kotlin.timeout
 import com.nhaarman.mockito_kotlin.verify
 import io.callstats.event.CreateSessionEvent
+import io.callstats.event.EventManager
 import io.callstats.event.EventSender
 import io.callstats.event.KeepAliveEvent
 import io.callstats.event.auth.TokenRequest
 import io.callstats.event.fabric.FabricSetupFailedEvent
 import io.callstats.event.user.UserLeftEvent
 import okhttp3.OkHttpClient
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.webrtc.PeerConnection
 import java.util.concurrent.ExecutorService
 
 class CallstatsTest {
 
   @Mock private lateinit var sender: EventSender
+  @Mock private lateinit var connection: PeerConnection
+  @Mock private lateinit var manager: EventManager
 
   private lateinit var callstats: Callstats
   private val defaultConfig = CallstatsConfig()
@@ -37,6 +42,10 @@ class CallstatsTest {
           localID: String,
           deviceID: String): EventSender {
         return sender
+      }
+
+      override fun eventManager(sender: EventSender, remoteID: String, connection: PeerConnection): EventManager {
+        return manager
       }
     }
     callstats = Callstats("app1", "local1", "device1", "code")
@@ -65,6 +74,22 @@ class CallstatsTest {
   fun stopSessionSendUserLeftEvent() {
     callstats.stopSession()
     verify(sender).send(any<UserLeftEvent>())
+  }
+
+  @Test
+  fun addNewFabricCreateEventManager() {
+    callstats.addNewFabric(connection, "remote1")
+    callstats.addNewFabric(connection, "remote1") // duplicate should not create new manager
+    assertEquals(1, callstats.eventManagers.size)
+  }
+
+  @Test
+  fun reportEventSendThroughManager() {
+    callstats.addNewFabric(connection, "remote1")
+    callstats.reportEvent(
+        "remote1",
+        OnIceConnectionChange(PeerConnection.IceConnectionState.CONNECTED))
+    verify(manager).process(any())
   }
 
   @Test
