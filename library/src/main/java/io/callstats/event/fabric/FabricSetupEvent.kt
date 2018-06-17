@@ -44,9 +44,9 @@ class FabricSetupEvent(
    */
   var remoteEndpointType = "peer"
 
-  val localIceCandidates: List<IceCandidate>? = mutableListOf()
-  val remoteIceCandidates: List<IceCandidate>? = mutableListOf()
-  val iceCandidatePairs: List<IceCandidatePair>? = mutableListOf()
+  val localIceCandidates: MutableList<IceCandidate> = mutableListOf()
+  val remoteIceCandidates: MutableList<IceCandidate> = mutableListOf()
+  val iceCandidatePairs: MutableList<IceCandidatePair> = mutableListOf()
 
   override fun path(): String = super.path() + "/setup"
 }

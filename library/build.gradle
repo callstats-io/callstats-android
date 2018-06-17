@@ -31,4 +31,5 @@ dependencies {
   testImplementation "junit:junit:$junitVersion"
   testImplementation "com.nhaarman:mockito-kotlin:$mockitoKotlinVersion"
   testImplementation "com.squareup.okhttp3:mockwebserver:$okhttpVersion"
+  testImplementation "org.webrtc:google-webrtc:$webRtcVersion"
 }

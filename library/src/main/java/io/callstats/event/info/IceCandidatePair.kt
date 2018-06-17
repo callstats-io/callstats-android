@@ -1,5 +1,7 @@
 package io.callstats.event.info
 
+import org.webrtc.RTCStats
+
 /**
  * ICE candidate pair info for some event
  *
@@ -14,5 +16,23 @@ data class IceCandidatePair(
     val localCandidateId: String,
     val remoteCandidateId: String,
     val state: String,
-    val priority: Int,
-    val nominated: Boolean)
+    val priority: Long,
+    val nominated: Boolean) {
+
+  companion object {
+    fun fromStats(stats: RTCStats): IceCandidatePair {
+      // callstats restful accept state "in-progress" with "inprogress"
+      var state = stats.members["state"] as? String ?: ""
+      if (state == "in-progress") state = "inprogress"
+
+      return IceCandidatePair(
+          id = stats.id,
+          localCandidateId = stats.members["localCandidateId"] as? String ?: "",
+          remoteCandidateId = stats.members["remoteCandidateId"] as? String ?: "",
+          state = state,
+          priority = stats.members["priority"] as? Long ?: 0,
+          nominated = stats.members["nominated"] as? Boolean ?: false
+      )
+    }
+  }
+}

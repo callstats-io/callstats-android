@@ -1,5 +1,7 @@
 package io.callstats
 
+import org.webrtc.PeerConnection
+
 /**
  * Error type to report to Callstats
  */
@@ -25,3 +27,9 @@ enum class CallstatsError(val value: String) {
    */
   SIGNALING("SignalingError")
 }
+
+/**
+ *
+ */
+sealed class CallstatsWebRTCFunction
+data class OnIceConnectionChange(val state: PeerConnection.IceConnectionState): CallstatsWebRTCFunction()

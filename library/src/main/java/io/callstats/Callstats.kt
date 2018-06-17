@@ -6,9 +6,10 @@ import io.callstats.event.fabric.FabricSetupFailedEvent
 import io.callstats.event.user.UserAliveEvent
 import io.callstats.event.user.UserJoinEvent
 import io.callstats.event.user.UserLeftEvent
-import io.callstats.interceptor.InterceptorManager
+import io.callstats.event.EventManager
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import org.webrtc.PeerConnection
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -30,7 +31,10 @@ class Callstats(
         .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
         .build()
     open fun executor(): ExecutorService = Executors.newSingleThreadExecutor()
-    open fun interceptorManager(): InterceptorManager = InterceptorManager(emptyArray())
+    open fun eventManager(
+        sender: EventSender,
+        remoteID: String,
+        connection: PeerConnection): EventManager = EventManager(sender, remoteID, connection)
     open fun eventSender(
         client: OkHttpClient,
         executor: ExecutorService,
@@ -45,11 +49,13 @@ class Callstats(
 
   private val okHttpClient = dependency.okhttpClient()
   private val executor = dependency.executor()
-  private val interceptorManager = dependency.interceptorManager()
   private var sender = dependency.eventSender(okHttpClient, executor, appID, localID, deviceID)
 
   // timers
   private var aliveTimer: Timer? = null
+
+  // connections
+  private val eventManagers = mutableMapOf<String, EventManager>()
 
   init {
     sender.send(TokenRequest(jwt, "$localID@$appID"))
