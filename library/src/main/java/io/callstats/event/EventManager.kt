@@ -27,7 +27,7 @@ internal open class EventManager(
       // forward event
       interceptors.forEach { interceptor ->
         val event = interceptor.process(webRTCEvent, connectionID, report.statsMap)
-        event?.let { sender.send(event) }
+        event.forEach { sender.send(it) }
       }
     }
   }

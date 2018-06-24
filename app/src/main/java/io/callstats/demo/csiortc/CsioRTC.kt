@@ -5,6 +5,8 @@ import android.util.Base64
 import android.util.Log
 import io.callstats.Callstats
 import io.callstats.OnIceConnectionChange
+import io.callstats.OnIceGatheringChange
+import io.callstats.OnSignalingChange
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import org.json.JSONObject
@@ -281,12 +283,19 @@ class CsioRTC(
       peerDataChannels[peerId] = channel
     }
 
-    override fun onIceConnectionReceivingChange(p0: Boolean) {}
     override fun onIceConnectionChange(state: PeerConnection.IceConnectionState) {
       peerConnections[peerId]?.let { callstats.reportEvent(peerId, OnIceConnectionChange(state)) }
     }
-    override fun onIceGatheringChange(state: PeerConnection.IceGatheringState?) {}
-    override fun onSignalingChange(state: PeerConnection.SignalingState?) {}
+
+    override fun onIceGatheringChange(state: PeerConnection.IceGatheringState) {
+      peerConnections[peerId]?.let { callstats.reportEvent(peerId, OnIceGatheringChange(state)) }
+    }
+
+    override fun onSignalingChange(state: PeerConnection.SignalingState) {
+      peerConnections[peerId]?.let { callstats.reportEvent(peerId, OnSignalingChange(state)) }
+    }
+
+    override fun onIceConnectionReceivingChange(p0: Boolean) {}
     override fun onIceCandidatesRemoved(candidates: Array<out IceCandidate>?) {}
     override fun onRemoveStream(stream: MediaStream?) {}
     override fun onRenegotiationNeeded() {}

@@ -34,6 +34,9 @@ class EventManagerTest {
     whenever(connection.getStats(any())).thenAnswer {
       (it.arguments[0] as RTCStatsCollectorCallback).onStatsDelivered(RTCStatsReport(0, mapOf()))
     }
+
+    whenever(mockInterceptor1.process(any(), any(), any())).thenReturn(emptyArray())
+    whenever(mockInterceptor2.process(any(), any(), any())).thenReturn(emptyArray())
   }
 
   @Test
