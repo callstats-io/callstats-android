@@ -13,6 +13,4 @@ class UserJoinEvent(confID: String, appVersion: String? = null) : CreateSessionE
   init { this.confID = confID }
 
   val endpointInfo = EndpointInfo(appVersion)
-
-  override fun path(): String = ""
 }

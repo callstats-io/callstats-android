@@ -64,6 +64,7 @@ class FabricInterceptor(private val remoteID: String): Interceptor {
           newState = webRTCEvent.state.name
           changedState = "signalingState"
         }
+        else -> throw IllegalArgumentException()
       }
 
       events += FabricStateChangeEvent(

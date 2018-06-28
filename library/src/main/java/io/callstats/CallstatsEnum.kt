@@ -32,6 +32,9 @@ enum class CallstatsError(val value: String) {
  *
  */
 sealed class CallstatsWebRTCFunction
+// public
 data class OnIceConnectionChange(val state: PeerConnection.IceConnectionState): CallstatsWebRTCFunction()
 data class OnIceGatheringChange(val state: PeerConnection.IceGatheringState): CallstatsWebRTCFunction()
 data class OnSignalingChange(val state: PeerConnection.SignalingState): CallstatsWebRTCFunction()
+// internal
+internal class OnStats: CallstatsWebRTCFunction()

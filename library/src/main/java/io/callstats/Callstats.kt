@@ -34,7 +34,8 @@ class Callstats(
     open fun eventManager(
         sender: EventSender,
         remoteID: String,
-        connection: PeerConnection): EventManager = EventManager(sender, remoteID, connection)
+        connection: PeerConnection,
+        config: CallstatsConfig): EventManager = EventManager(sender, remoteID, connection, config)
     open fun eventSender(
         client: OkHttpClient,
         executor: ExecutorService,
@@ -88,7 +89,7 @@ class Callstats(
    */
   fun addNewFabric(connection: PeerConnection, remoteUserID: String) {
     if (eventManagers.containsKey(remoteUserID)) return
-    eventManagers[remoteUserID] = dependency.eventManager(sender, remoteUserID, connection)
+    eventManagers[remoteUserID] = dependency.eventManager(sender, remoteUserID, connection, configuration)
   }
 
   /**

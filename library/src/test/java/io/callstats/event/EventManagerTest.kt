@@ -3,6 +3,7 @@ package io.callstats.event
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
+import io.callstats.CallstatsConfig
 import io.callstats.OnIceConnectionChange
 import io.callstats.interceptor.Interceptor
 import org.junit.Before
@@ -29,6 +30,7 @@ class EventManagerTest {
         sender,
         "remote1",
         connection,
+        CallstatsConfig(),
         arrayOf(mockInterceptor1, mockInterceptor2))
 
     whenever(connection.getStats(any())).thenAnswer {

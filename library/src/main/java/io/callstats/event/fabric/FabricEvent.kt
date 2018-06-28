@@ -6,5 +6,5 @@ import io.callstats.event.SessionEvent
  * Base type for Fabric events
  */
 abstract class FabricEvent : SessionEvent() {
-  override fun path(): String = "fabric"
+  override fun path(): String = "events/fabric"
 }
