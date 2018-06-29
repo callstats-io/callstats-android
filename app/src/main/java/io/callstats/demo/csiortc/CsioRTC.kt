@@ -219,9 +219,9 @@ class CsioRTC(
     peerConnection?.let {
       callstats.addNewFabric(it, peerId)
       it.addStream(localMediaStream)
-      it.createOffer(SdpObserver(peerId), MediaConstraints())
       val channel = it.createDataChannel(DATA_CHANNEL_LABEL, DataChannel.Init())
       channel.registerObserver(DataChannelObserver(peerId))
+      it.createOffer(SdpObserver(peerId), MediaConstraints())
       peerDataChannels[peerId] = channel
       peerConnections[peerId] = it
       callback.onCsioRTCPeerUpdate()
@@ -267,7 +267,7 @@ class CsioRTC(
       sdpJson.put("sdp", sdp.description)
       val json = JSONObject()
       json.put(MESSAGE_OFFER_KEY, sdpJson)
-      signaling.send(peerId, json.toString())
+      signaling.send(peerId, json.toString().replace("\\/", "/"))
     }
 
     override fun onCreateFailure(reason: String?) {}
