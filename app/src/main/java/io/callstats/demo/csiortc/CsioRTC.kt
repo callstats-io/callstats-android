@@ -198,8 +198,24 @@ class CsioRTC(
 
   // Peer connection
 
+  private fun createConnection(peerId: String): PeerConnection? {
+    val iceServers = listOf(
+        PeerConnection.IceServer
+            .builder("turn:turn-server-1.dialogue.io:3478")
+            .setUsername("test")
+            .setPassword("1234")
+            .createIceServer(),
+        PeerConnection.IceServer
+            .builder("turn:turn-server-1.dialogue.io:5349")
+            .setUsername("test")
+            .setPassword("1234")
+            .createIceServer()
+    )
+    return peerConnectionFactory.createPeerConnection(iceServers, PeerObserver(peerId))
+  }
+
   private fun offer(peerId: String) {
-    val peerConnection = peerConnectionFactory.createPeerConnection(emptyList(), PeerObserver(peerId))
+    val peerConnection = createConnection(peerId)
     peerConnection?.let {
       callstats.addNewFabric(it, peerId)
       it.addStream(localMediaStream)
@@ -213,7 +229,7 @@ class CsioRTC(
   }
 
   private fun answer(peerId: String, offerSdp: SessionDescription) {
-    val peerConnection = peerConnectionFactory.createPeerConnection(emptyList(), PeerObserver(peerId))
+    val peerConnection = createConnection(peerId)
     peerConnection?.let {
       callstats.addNewFabric(it, peerId)
       it.addStream(localMediaStream)

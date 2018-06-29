@@ -141,9 +141,7 @@ class CallActivity : AppCompatActivity(), CsioRTC.Callback {
   override fun onCsioRTCPeerVideoAvailable() {
     runOnUiThread {
       val peerIds = csioRTC.getAvailableVideoPeerIds()
-      if (showingVideoFromPeer == null && peerIds.isNotEmpty()) {
-        showVideoFromPeerId(peerIds.first())
-      }
+      showVideoFromPeerId(peerIds.last())
     }
   }
 
