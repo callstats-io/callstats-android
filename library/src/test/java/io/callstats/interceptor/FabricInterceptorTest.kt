@@ -3,7 +3,9 @@ package io.callstats.interceptor
 import io.callstats.OnIceConnectionChange
 import io.callstats.event.fabric.FabricSetupEvent
 import io.callstats.event.fabric.FabricStateChangeEvent
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.webrtc.PeerConnection.IceConnectionState

@@ -2,7 +2,8 @@ package io.callstats.event
 
 import com.google.gson.Gson
 import okhttp3.OkHttpClient
-import java.util.*
+import java.util.Date
+import java.util.LinkedList
 import java.util.concurrent.ExecutorService
 
 /**

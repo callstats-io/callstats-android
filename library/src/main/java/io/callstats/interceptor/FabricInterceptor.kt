@@ -19,7 +19,7 @@ import org.webrtc.RTCStats
 /**
  * Interceptor to handle fabric events
  */
-class FabricInterceptor(private val remoteID: String): Interceptor {
+internal class FabricInterceptor(private val remoteID: String): Interceptor {
 
   private var createTimestamp = System.currentTimeMillis()
   private var iceConnectionState = IceConnectionState.NEW

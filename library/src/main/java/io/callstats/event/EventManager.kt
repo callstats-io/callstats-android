@@ -11,7 +11,7 @@ import io.callstats.interceptor.StatsInterceptor
 import io.callstats.utils.md5
 import org.webrtc.PeerConnection
 import org.webrtc.RTCStatsReport
-import java.util.*
+import java.util.Timer
 import kotlin.concurrent.timerTask
 
 /**
