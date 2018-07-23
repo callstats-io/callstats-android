@@ -48,6 +48,7 @@ abstract class Event {
     val path = when (this) {
       is SessionEvent -> "v1/apps/$appID/conferences/$confID/$ucID/${path()}"
       is CreateSessionEvent -> "v1/apps/$appID/conferences/$confID"
+      is AuthenticatedEvent -> "v1/apps/$appID/${path()}"
       else -> path()
     }
     val url = "${url()}/$path"

@@ -11,14 +11,28 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import org.json.JSONObject
 import org.spongycastle.jce.provider.BouncyCastleProvider
-import org.webrtc.*
+import org.webrtc.AudioSource
+import org.webrtc.AudioTrack
+import org.webrtc.DataChannel
+import org.webrtc.EglBase
+import org.webrtc.IceCandidate
+import org.webrtc.MediaConstraints
+import org.webrtc.MediaStream
+import org.webrtc.PeerConnection
+import org.webrtc.PeerConnectionFactory
+import org.webrtc.RtpReceiver
+import org.webrtc.SessionDescription
+import org.webrtc.SurfaceViewRenderer
+import org.webrtc.VideoCapturer
+import org.webrtc.VideoSource
+import org.webrtc.VideoTrack
 import java.nio.ByteBuffer
 import java.security.KeyFactory
 import java.security.Security
 import java.security.spec.PKCS8EncodedKeySpec
 
 class CsioRTC(
-    context: Context,
+    private val context: Context,
     private val room: String,
     deviceID: String,
     val callback: Callback,
@@ -414,6 +428,7 @@ class CsioRTC(
         .compact()
 
     return Callstats(
+        context,
         appID,
         localID,
         deviceID,

@@ -1,5 +1,6 @@
 package io.callstats
 
+import android.content.Context
 import io.callstats.event.EventSender
 import io.callstats.event.auth.TokenRequest
 import io.callstats.event.fabric.FabricSetupFailedEvent
@@ -7,10 +8,13 @@ import io.callstats.event.user.UserAliveEvent
 import io.callstats.event.user.UserJoinEvent
 import io.callstats.event.user.UserLeftEvent
 import io.callstats.event.EventManager
+import io.callstats.event.stats.SystemStatusStats
+import io.callstats.utils.SystemStatus
+import io.callstats.utils.SystemStatusProvider
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.webrtc.PeerConnection
-import java.util.*
+import java.util.Timer
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.concurrent.timerTask
@@ -19,6 +23,7 @@ import kotlin.concurrent.timerTask
  * Entry point for sending WebRTC stats to callstats.io
  */
 class Callstats(
+    private val context: Context,
     appID: String,
     localID: String,
     deviceID: String,
@@ -42,6 +47,7 @@ class Callstats(
         appID: String,
         localID: String,
         deviceID: String): EventSender = EventSender(client, executor, appID, localID, deviceID)
+    open fun systemStatus(): SystemStatusProvider = SystemStatus()
   }
 
   companion object {
@@ -50,10 +56,12 @@ class Callstats(
 
   private val okHttpClient = dependency.okhttpClient()
   private val executor = dependency.executor()
-  private var sender = dependency.eventSender(okHttpClient, executor, appID, localID, deviceID)
+  private val sender = dependency.eventSender(okHttpClient, executor, appID, localID, deviceID)
+  private val systemStatus = dependency.systemStatus()
 
   // timers
   private var aliveTimer: Timer? = null
+  private var systemStatsTimer: Timer? = null
 
   // connections
   internal val eventManagers = mutableMapOf<String, EventManager>()
@@ -70,12 +78,14 @@ class Callstats(
   fun startSession(confID: String) {
     sender.send(UserJoinEvent(confID, clientVersion).apply { this.confID = confID })
     startKeepAlive()
+    startSendingSystemStats()
   }
 
   /**
    * Stop the current session and stop the keep alive.
    */
   fun stopSession() {
+    stopSendingSystemStats()
     stopKeepAlive()
     sender.send(UserLeftEvent())
   }
@@ -111,7 +121,7 @@ class Callstats(
     })
   }
 
-  // timers
+  // region Timers
 
   private fun startKeepAlive() {
     stopKeepAlive()
@@ -127,4 +137,30 @@ class Callstats(
     aliveTimer?.cancel()
     aliveTimer = null
   }
+
+  private fun startSendingSystemStats() {
+    stopSendingSystemStats()
+    val period = configuration.systemStatsSubmissionPeriod * 1000L
+    systemStatsTimer = Timer(true)
+    systemStatsTimer?.schedule(
+        timerTask {
+          val stats = SystemStatusStats().apply {
+            cpuLevel = systemStatus.cpuLevel()
+            batteryLevel = systemStatus.batteryLevel(context)
+            memoryAvailable = systemStatus.availableMemory(context)
+            memoryUsage = systemStatus.usageMemory(context)
+            threadCount = systemStatus.threadCount()
+          }
+          if (stats.isValid()) sender.send(stats)
+        },
+        period,
+        period)
+  }
+
+  private fun stopSendingSystemStats() {
+    systemStatsTimer?.cancel()
+    systemStatsTimer = null
+  }
+
+  // endregion
 }

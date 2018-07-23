@@ -7,4 +7,7 @@ class CallstatsConfig {
 
   /** Stats submission period */
   var statsSubmissionPeriod = 30
+
+  /** System stats submission period */
+  var systemStatsSubmissionPeriod = 30
 }
