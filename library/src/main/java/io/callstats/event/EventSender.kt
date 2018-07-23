@@ -9,14 +9,18 @@ import java.util.concurrent.ExecutorService
 /**
  * Event queue for sending events to server
  */
-internal open class EventSender(
+internal interface EventSender {
+  fun send(event: Event)
+}
+
+internal class EventSenderImpl(
     private val client: OkHttpClient,
     private val executor: ExecutorService,
     private val appID: String,
     private val localID: String,
     private val deviceID: String,
     private val originID: String? = null,
-    private val gson: Gson = Gson()) {
+    private val gson: Gson = Gson()): EventSender {
 
   private var token: String? = null
   private var confID: String? = null
@@ -26,7 +30,7 @@ internal open class EventSender(
   internal val authenticatedQueue = LinkedList<Event>()
   internal val sessionQueue = LinkedList<Event>()
 
-  open fun send(event: Event) {
+  override fun send(event: Event) {
     event.localID = localID
     event.deviceID = deviceID
     event.originID = originID

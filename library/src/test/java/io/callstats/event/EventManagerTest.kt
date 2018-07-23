@@ -26,7 +26,7 @@ class EventManagerTest {
   @Before
   fun setup() {
     MockitoAnnotations.initMocks(this)
-    manager = EventManager(
+    manager = EventManagerImpl(
         sender,
         "remote1",
         connection,

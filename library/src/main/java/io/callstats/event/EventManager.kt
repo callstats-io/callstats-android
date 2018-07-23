@@ -16,21 +16,24 @@ import kotlin.concurrent.timerTask
 
 /**
  * Manager than handle the stats incoming and forward to interceptors
- * @param sender [EventSender] to send event produce by [Interceptor]
  */
-internal open class EventManager(
+internal interface EventManager {
+  fun process(webRTCEvent: CallstatsWebRTCFunction)
+}
+
+internal class EventManagerImpl(
     private val sender: EventSender,
     private val remoteID: String,
     private val connection: PeerConnection,
     private val config: CallstatsConfig,
     private val interceptors: Array<Interceptor> = arrayOf(
         FabricInterceptor(remoteID),
-        StatsInterceptor(remoteID)))
+        StatsInterceptor(remoteID))): EventManager
 {
   private var connectionID = ""
   private var statsTimer: Timer? = null
 
-  open fun process(webRTCEvent: CallstatsWebRTCFunction) {
+  override fun process(webRTCEvent: CallstatsWebRTCFunction) {
     connection.getStats { report ->
       // create connection id
       if (connectionID.isEmpty()) connectionID = createConnectionID(report)

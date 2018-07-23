@@ -8,6 +8,8 @@ import io.callstats.event.user.UserAliveEvent
 import io.callstats.event.user.UserJoinEvent
 import io.callstats.event.user.UserLeftEvent
 import io.callstats.event.EventManager
+import io.callstats.event.EventManagerImpl
+import io.callstats.event.EventSenderImpl
 import io.callstats.event.stats.SystemStatusStats
 import io.callstats.utils.SystemStatus
 import io.callstats.utils.SystemStatusProvider
@@ -40,13 +42,13 @@ class Callstats(
         sender: EventSender,
         remoteID: String,
         connection: PeerConnection,
-        config: CallstatsConfig): EventManager = EventManager(sender, remoteID, connection, config)
+        config: CallstatsConfig): EventManager = EventManagerImpl(sender, remoteID, connection, config)
     open fun eventSender(
         client: OkHttpClient,
         executor: ExecutorService,
         appID: String,
         localID: String,
-        deviceID: String): EventSender = EventSender(client, executor, appID, localID, deviceID)
+        deviceID: String): EventSender = EventSenderImpl(client, executor, appID, localID, deviceID)
     open fun systemStatus(): SystemStatusProvider = SystemStatus()
   }
 

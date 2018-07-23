@@ -20,7 +20,7 @@ import java.util.concurrent.ThreadPoolExecutor
 
 class EventSenderTest {
 
-  private lateinit var sender: EventSender
+  private lateinit var sender: EventSenderImpl
 
   @Mock private lateinit var client: OkHttpClient
   @Mock private lateinit var executor: ThreadPoolExecutor
@@ -28,7 +28,7 @@ class EventSenderTest {
   @Before
   fun setup() {
     MockitoAnnotations.initMocks(this)
-    sender = EventSender(client, executor, "app1", "local1", "device1")
+    sender = EventSenderImpl(client, executor, "app1", "local1", "device1")
   }
 
   @Test
