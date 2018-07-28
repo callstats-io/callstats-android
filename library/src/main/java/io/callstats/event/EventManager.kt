@@ -6,6 +6,7 @@ import io.callstats.OnStats
 import io.callstats.event.fabric.FabricSetupEvent
 import io.callstats.event.fabric.FabricTerminatedEvent
 import io.callstats.interceptor.FabricInterceptor
+import io.callstats.interceptor.IceInterceptor
 import io.callstats.interceptor.Interceptor
 import io.callstats.interceptor.StatsInterceptor
 import io.callstats.utils.md5
@@ -28,7 +29,8 @@ internal class EventManagerImpl(
     private val config: CallstatsConfig,
     private val interceptors: Array<Interceptor> = arrayOf(
         FabricInterceptor(remoteID),
-        StatsInterceptor(remoteID))): EventManager
+        StatsInterceptor(remoteID),
+        IceInterceptor(remoteID))): EventManager
 {
   private var connectionID = ""
   private var statsTimer: Timer? = null

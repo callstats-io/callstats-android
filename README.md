@@ -11,7 +11,7 @@ The project contains demo application which connect to https://demo.callstats.io
 - [ ] User Action Events
   - [x] User joined
   - [x] User alive
-  - [x] User jleft
+  - [x] User left
   - [ ] User detail
 - [ ] Fabric Events
   - [x] Setup
@@ -24,7 +24,7 @@ The project contains demo application which connect to https://demo.callstats.io
 - [x] Stats submission
   - [x] Conference stats
   - [x] System status stats
-- [ ] ICE Events
+- [x] ICE Events
 - [ ] Media Events
 - [ ] Device Events
 - [ ] Special Events

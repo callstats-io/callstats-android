@@ -9,8 +9,9 @@ import io.callstats.event.fabric.FabricDroppedEvent
 import io.callstats.event.fabric.FabricSetupEvent
 import io.callstats.event.fabric.FabricStateChangeEvent
 import io.callstats.event.fabric.FabricTerminatedEvent
-import io.callstats.event.info.IceCandidate
-import io.callstats.event.info.IceCandidatePair
+import io.callstats.utils.candidatePairs
+import io.callstats.utils.localCandidates
+import io.callstats.utils.remoteCandidates
 import org.webrtc.PeerConnection.IceConnectionState
 import org.webrtc.PeerConnection.IceGatheringState
 import org.webrtc.PeerConnection.SignalingState
@@ -81,9 +82,7 @@ internal class FabricInterceptor(private val remoteID: String): Interceptor {
         && webRTCEvent.state == IceConnectionState.FAILED
         && (iceConnectionState == IceConnectionState.COMPLETED || iceConnectionState == IceConnectionState.DISCONNECTED))
     {
-      val pairs = stats.values
-          .filter { it.type == "candidate-pair" }
-          .map { IceCandidatePair.fromStats(it) }
+      val pairs = stats.candidatePairs()
 
       if (pairs.isNotEmpty()) {
         events += FabricDroppedEvent(
@@ -113,19 +112,9 @@ internal class FabricInterceptor(private val remoteID: String): Interceptor {
       connected = true
 
       // create event
-      val pairs = stats.values
-          .filter { it.type == "candidate-pair" }
-          .map { IceCandidatePair.fromStats(it) }
-
-      val locals = pairs
-          .map { it.localCandidateId }
-          .mapNotNull { stats[it] }
-          .map { IceCandidate.fromStats(it) }
-
-      val remotes = pairs
-          .map { it.remoteCandidateId }
-          .mapNotNull { stats[it] }
-          .map { IceCandidate.fromStats(it) }
+      val pairs = stats.candidatePairs()
+      val locals = stats.localCandidates()
+      val remotes = stats.remoteCandidates()
 
       events += FabricSetupEvent(remoteID, connectionID).apply {
         delay = System.currentTimeMillis() - createTimestamp

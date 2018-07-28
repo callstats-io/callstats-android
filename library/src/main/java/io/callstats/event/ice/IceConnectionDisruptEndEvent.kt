@@ -10,7 +10,7 @@ package io.callstats.event.ice
 class IceConnectionDisruptEndEvent(
     val remoteID: String,
     val connectionID: String,
-    val delay: Int) : IceEvent()
+    val delay: Long) : IceEvent()
 {
   val eventType = "iceConnectionDisruptionEnd"
   val currIceConnectionState = "checking"
