@@ -229,6 +229,7 @@ class CsioRTC(
   }
 
   private fun offer(peerId: String) {
+    callstats.log("offering $peerId")
     val peerConnection = createConnection(peerId)
     peerConnection?.let {
       callstats.addNewFabric(it, peerId)
@@ -243,6 +244,7 @@ class CsioRTC(
   }
 
   private fun answer(peerId: String, offerSdp: SessionDescription) {
+    callstats.log("answering $peerId")
     val peerConnection = createConnection(peerId)
     peerConnection?.let {
       callstats.addNewFabric(it, peerId)

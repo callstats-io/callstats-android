@@ -10,6 +10,7 @@ import io.callstats.event.user.UserLeftEvent
 import io.callstats.event.EventManager
 import io.callstats.event.EventManagerImpl
 import io.callstats.event.EventSenderImpl
+import io.callstats.event.special.LogEvent
 import io.callstats.event.stats.SystemStatusStats
 import io.callstats.utils.SystemStatus
 import io.callstats.utils.SystemStatusProvider
@@ -121,6 +122,16 @@ class Callstats(
       this.message = message
       this.stack = stack
     })
+  }
+
+  /**
+   * Log application event
+   * @param message message to be logged
+   * @param level level of this log message
+   * @param type type of message content
+   */
+  fun log(message: String, level: LoggingLevel = LoggingLevel.INFO, type: LoggingType = LoggingType.TEXT) {
+    sender.send(LogEvent(level.name.toLowerCase(), message, type.name.toLowerCase()))
   }
 
   // region Timers

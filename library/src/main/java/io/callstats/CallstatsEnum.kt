@@ -29,7 +29,7 @@ enum class CallstatsError(val value: String) {
 }
 
 /**
- *
+ * WebRTC events that will be forwarded to callstats lib
  */
 sealed class CallstatsWebRTCFunction
 // public
@@ -38,3 +38,17 @@ data class OnIceGatheringChange(val state: PeerConnection.IceGatheringState): Ca
 data class OnSignalingChange(val state: PeerConnection.SignalingState): CallstatsWebRTCFunction()
 // internal
 internal class OnStats: CallstatsWebRTCFunction()
+
+/**
+ * Logging level to use with [Callstats.log]
+ */
+enum class LoggingLevel {
+  DEBUG, INFO, WARN, ERROR, FATAL
+}
+
+/**
+ * Logging message type to use with [Callstats.log]
+ */
+enum class LoggingType {
+  TEXT, JSON
+}

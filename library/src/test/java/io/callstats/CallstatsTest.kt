@@ -13,6 +13,7 @@ import io.callstats.event.EventSender
 import io.callstats.event.KeepAliveEvent
 import io.callstats.event.auth.TokenRequest
 import io.callstats.event.fabric.FabricSetupFailedEvent
+import io.callstats.event.special.LogEvent
 import io.callstats.event.stats.SystemStatusStats
 import io.callstats.event.user.UserLeftEvent
 import io.callstats.utils.SystemStatusProvider
@@ -141,6 +142,14 @@ class CallstatsTest {
           && it.reason == CallstatsError.MEDIA_PERMISSION.value
           && it.message == "msg1"
           && it.stack == "stack1"
+    })
+  }
+
+  @Test
+  fun loggingSendValidEvent() {
+    callstats.log("msg")
+    verify(sender).send(argWhere {
+      it is LogEvent && it.message == "msg" && it.level == "info" && it.messageType == "text"
     })
   }
 }
