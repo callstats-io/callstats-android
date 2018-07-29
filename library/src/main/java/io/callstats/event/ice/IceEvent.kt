@@ -6,5 +6,5 @@ import io.callstats.event.SessionEvent
  * Base type for ICE events
  */
 abstract class IceEvent : SessionEvent() {
-  override fun path() = "event/ice/status"
+  override fun path() = "events/ice/status"
 }

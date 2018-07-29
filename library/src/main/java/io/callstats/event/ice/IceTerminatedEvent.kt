@@ -16,6 +16,6 @@ class IceTerminatedEvent(
     val prevIceCandidatePair: IceCandidatePair,
     val prevIceConnectionState: String) : IceEvent()
 {
-  val eventType = "iceDisruptionStart"
+  val eventType = "iceTerminated"
   val currIceConnectionState = "closed"
 }

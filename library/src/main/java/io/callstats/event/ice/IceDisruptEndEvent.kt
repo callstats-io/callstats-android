@@ -20,5 +20,6 @@ class IceDisruptEndEvent(
     val currIceConnectionState: String,
     val delay: Long) : IceEvent()
 {
+  val eventType = "iceDisruptionEnd"
   val prevIceConnectionState = "disconnected"
 }
