@@ -10,6 +10,8 @@ import io.callstats.event.user.UserLeftEvent
 import io.callstats.event.EventManager
 import io.callstats.event.EventManagerImpl
 import io.callstats.event.EventSenderImpl
+import io.callstats.event.info.Feedback
+import io.callstats.event.special.FeedbackEvent
 import io.callstats.event.special.LogEvent
 import io.callstats.event.stats.SystemStatusStats
 import io.callstats.utils.SystemStatus
@@ -132,6 +134,25 @@ class Callstats(
    */
   fun log(message: String, level: LoggingLevel = LoggingLevel.INFO, type: LoggingType = LoggingType.TEXT) {
     sender.send(LogEvent(level.name.toLowerCase(), message, type.name.toLowerCase()))
+  }
+
+  /**
+   * Give feedback on this conference call
+   */
+  fun feedback(
+      rating: Int,
+      comment: String? = null,
+      audioQuality: Int? = null,
+      videoQuality: Int? = null,
+      remoteUserID: String? = null)
+  {
+    val info = Feedback(rating).apply {
+      comments = comment
+      audioQualityRating = audioQuality
+      videoQualityRating = videoQuality
+      remoteID = remoteUserID
+    }
+    sender.send(FeedbackEvent(info))
   }
 
   // region Timers

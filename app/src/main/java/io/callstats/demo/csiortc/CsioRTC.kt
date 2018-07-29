@@ -210,6 +210,15 @@ class CsioRTC(
     peerDataChannels.forEach { _, dataChannel -> dataChannel.send(data) }
   }
 
+  // Others
+
+  /**
+   * Submit feedback of current call
+   */
+  fun sendFeedback(rating: Int, comment: String? = null) {
+    callstats.feedback(rating, comment)
+  }
+
   // Peer connection
 
   private fun createConnection(peerId: String): PeerConnection? {

@@ -29,6 +29,6 @@ The project contains demo application which connect to https://demo.callstats.io
 - [ ] Device Events
 - [ ] Special Events
   - [x] Application Log
-  - [ ] Feedback
+  - [x] Feedback
   - [ ] SSRC
 - [ ] Callstats Internal Events

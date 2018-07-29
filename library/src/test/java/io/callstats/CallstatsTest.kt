@@ -13,6 +13,7 @@ import io.callstats.event.EventSender
 import io.callstats.event.KeepAliveEvent
 import io.callstats.event.auth.TokenRequest
 import io.callstats.event.fabric.FabricSetupFailedEvent
+import io.callstats.event.special.FeedbackEvent
 import io.callstats.event.special.LogEvent
 import io.callstats.event.stats.SystemStatusStats
 import io.callstats.event.user.UserLeftEvent
@@ -150,6 +151,18 @@ class CallstatsTest {
     callstats.log("msg")
     verify(sender).send(argWhere {
       it is LogEvent && it.message == "msg" && it.level == "info" && it.messageType == "text"
+    })
+  }
+
+  @Test
+  fun feedbackSendValidEvent() {
+    callstats.feedback(3, "test", 1, 2, "remote1")
+    verify(sender).send(argWhere {
+      it is FeedbackEvent
+          && it.feedback.comments == "test"
+          && it.feedback.audioQualityRating == 1
+          && it.feedback.videoQualityRating == 2
+          && it.feedback.remoteID == "remote1"
     })
   }
 }

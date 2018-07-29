@@ -3,9 +3,13 @@ package io.callstats.demo
 import android.os.Bundle
 import android.provider.Settings
 import android.support.v4.view.GravityCompat
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.view.ContextThemeWrapper
+import android.view.LayoutInflater
 import android.view.WindowManager
 import android.widget.ArrayAdapter
+import android.widget.RatingBar
 import android.widget.Toast
 import io.callstats.demo.csiortc.CsioRTC
 import kotlinx.android.synthetic.main.activity_call.*
@@ -52,7 +56,7 @@ class CallActivity : AppCompatActivity(), CsioRTC.Callback {
     count_text.text = getString(R.string.call_no_participant, 0)
 
     chat_button.setOnClickListener { drawer_layout.openDrawer(GravityCompat.END) }
-    hang_button.setOnClickListener { finish() }
+    hang_button.setOnClickListener { showFeedbackAndHang() }
 
     mic_button.setOnClickListener {
       val selected = !it.isSelected
@@ -121,6 +125,25 @@ class CallActivity : AppCompatActivity(), CsioRTC.Callback {
     // add new renderer
     showingVideoFromPeer = peerId
     csioRTC.addRemoteVideoRenderer(peerId, remote_video_view)
+  }
+
+  private fun showFeedbackAndHang() {
+    val view = LayoutInflater.from(this).inflate(R.layout.dialog_feedback, null)
+    val ratingBar = view.findViewById<RatingBar>(R.id.rating)
+    ratingBar.setOnRatingBarChangeListener { ratingBar, rating, b ->
+      if(rating < 1f) ratingBar.rating = 1f
+    }
+    AlertDialog.Builder(ContextThemeWrapper(this, R.style.AppTheme_Dialog))
+        .setView(view)
+        .setTitle(R.string.feedback_title)
+        .setPositiveButton(R.string.feedback_submit, { dialogInterface, _ ->
+          val rating = ratingBar.rating
+          csioRTC.sendFeedback(rating.toInt())
+          dialogInterface.dismiss()
+        })
+        .setNegativeButton(R.string.feedback_cancel, null)
+        .setOnDismissListener { finish() }
+        .show()
   }
 
   // CsioRTC callback
