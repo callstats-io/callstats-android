@@ -14,6 +14,7 @@ import io.callstats.event.info.Feedback
 import io.callstats.event.special.FeedbackEvent
 import io.callstats.event.special.LogEvent
 import io.callstats.event.stats.SystemStatusStats
+import io.callstats.event.user.UserDetailsEvent
 import io.callstats.utils.SystemStatus
 import io.callstats.utils.SystemStatusProvider
 import okhttp3.OkHttpClient
@@ -26,6 +27,15 @@ import kotlin.concurrent.timerTask
 
 /**
  * Entry point for sending WebRTC stats to callstats.io
+ *
+ * @param context Application context
+ * @param appID App identifier from Callstats
+ * @param localID Your user identifier for this conference
+ * @param deviceID Unique device identifier
+ * @param jwt JWT from server
+ * @param username Your readable username to show in dashboard
+ * @param clientVersion Your app version
+ * @param configuration [CallstatsConfig] lib config
  */
 class Callstats(
     private val context: Context,
@@ -33,6 +43,7 @@ class Callstats(
     localID: String,
     deviceID: String,
     jwt: String,
+    private val username: String? = null,
     private val clientVersion: String? = null,
     private val configuration: CallstatsConfig = CallstatsConfig()) {
 
@@ -81,7 +92,8 @@ class Callstats(
    * @param confID local conference identifier for this call session
    */
   fun startSession(confID: String) {
-    sender.send(UserJoinEvent(confID, clientVersion).apply { this.confID = confID })
+    sender.send(UserJoinEvent(confID, clientVersion))
+    username?.let { sender.send(UserDetailsEvent(it)) }
     startKeepAlive()
     startSendingSystemStats()
   }

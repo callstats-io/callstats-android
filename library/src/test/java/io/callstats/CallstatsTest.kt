@@ -16,6 +16,7 @@ import io.callstats.event.fabric.FabricSetupFailedEvent
 import io.callstats.event.special.FeedbackEvent
 import io.callstats.event.special.LogEvent
 import io.callstats.event.stats.SystemStatusStats
+import io.callstats.event.user.UserDetailsEvent
 import io.callstats.event.user.UserLeftEvent
 import io.callstats.utils.SystemStatusProvider
 import okhttp3.OkHttpClient
@@ -67,7 +68,7 @@ class CallstatsTest {
       keepAlivePeriod = 5
       statsSubmissionPeriod = 5
     }
-    callstats = Callstats(context, "app1", "local1", "device1", "code", "1.0", defaultConfig)
+    callstats = Callstats(context, "app1", "local1", "device1", "code", "zoon", "1.0", defaultConfig)
   }
 
   @Test
@@ -79,6 +80,7 @@ class CallstatsTest {
   fun startSessionSendSessionCreateEvent() {
     callstats.startSession("conf1")
     verify(sender).send(any<CreateSessionEvent>())
+    verify(sender).send(any<UserDetailsEvent>())
   }
 
   @Test

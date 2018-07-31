@@ -443,7 +443,8 @@ class CsioRTC(
         appID,
         localID,
         deviceID,
-        jwt)
+        jwt,
+        alias)
   }
 
   private fun startCallstats(room: String) {
