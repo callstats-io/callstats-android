@@ -216,7 +216,7 @@ class CsioRTC(
    * Submit feedback of current call
    */
   fun sendFeedback(rating: Int, comment: String? = null) {
-    callstats.feedback(rating, comment)
+    callstats.sendUserFeedback(rating, comment)
   }
 
   // Peer connection

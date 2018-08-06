@@ -158,7 +158,7 @@ class CallstatsTest {
 
   @Test
   fun feedbackSendValidEvent() {
-    callstats.feedback(3, "test", 1, 2, "remote1")
+    callstats.sendUserFeedback(3, "test", 1, 2, "remote1")
     verify(sender).send(argWhere {
       it is FeedbackEvent
           && it.feedback.comments == "test"
