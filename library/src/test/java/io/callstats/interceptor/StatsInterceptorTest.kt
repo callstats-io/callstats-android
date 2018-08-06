@@ -13,12 +13,12 @@ class StatsInterceptorTest {
 
   @Before
   fun setup() {
-    interceptor = StatsInterceptor("remote1")
+    interceptor = StatsInterceptor()
   }
 
   @Test
   fun conferenceStats() {
-    val events = interceptor.process(OnStats(), "connection1", mapOf())
+    val events = interceptor.process(OnStats(), "remote1", "connection1", mapOf())
     assertEquals(1, events.size)
     assertTrue(events.first() is ConferenceStats)
   }

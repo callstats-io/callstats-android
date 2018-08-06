@@ -14,6 +14,7 @@ internal interface Interceptor {
    */
   fun process(
       webRTCEvent: CallstatsWebRTCFunction,
+      remoteID: String,
       connectionID: String,
       stats: Map<String, RTCStats>): Array<Event>
 }

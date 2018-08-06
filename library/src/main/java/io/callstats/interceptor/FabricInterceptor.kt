@@ -20,7 +20,7 @@ import org.webrtc.RTCStats
 /**
  * Interceptor to handle fabric events
  */
-internal class FabricInterceptor(private val remoteID: String): Interceptor {
+internal class FabricInterceptor : Interceptor {
 
   private var createTimestamp = System.currentTimeMillis()
   private var iceConnectionState = IceConnectionState.NEW
@@ -28,7 +28,12 @@ internal class FabricInterceptor(private val remoteID: String): Interceptor {
   private var signalingState = SignalingState.CLOSED
   private var connected = false
 
-  override fun process(webRTCEvent: CallstatsWebRTCFunction, connectionID: String, stats: Map<String, RTCStats>): Array<Event> {
+  override fun process(
+      webRTCEvent: CallstatsWebRTCFunction,
+      remoteID: String,
+      connectionID: String,
+      stats: Map<String, RTCStats>): Array<Event>
+  {
     // filter event
     if (webRTCEvent !is OnIceConnectionChange
         && webRTCEvent !is OnIceGatheringChange

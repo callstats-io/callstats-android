@@ -1,28 +1,19 @@
 package io.callstats
 
 import android.content.Context
-import io.callstats.event.EventSender
 import io.callstats.event.auth.TokenRequest
 import io.callstats.event.fabric.FabricSetupFailedEvent
 import io.callstats.event.user.UserAliveEvent
 import io.callstats.event.user.UserJoinEvent
 import io.callstats.event.user.UserLeftEvent
 import io.callstats.event.EventManager
-import io.callstats.event.EventManagerImpl
-import io.callstats.event.EventSenderImpl
 import io.callstats.event.info.Feedback
 import io.callstats.event.special.FeedbackEvent
 import io.callstats.event.special.LogEvent
 import io.callstats.event.stats.SystemStatusStats
 import io.callstats.event.user.UserDetailsEvent
-import io.callstats.utils.SystemStatus
-import io.callstats.utils.SystemStatusProvider
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import org.webrtc.PeerConnection
 import java.util.Timer
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import kotlin.concurrent.timerTask
 
 /**
@@ -47,27 +38,8 @@ class Callstats(
     private val clientVersion: String? = null,
     private val configuration: CallstatsConfig = CallstatsConfig()) {
 
-  internal open class Dependency {
-    open fun okhttpClient(): OkHttpClient = OkHttpClient.Builder()
-        .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
-        .build()
-    open fun executor(): ExecutorService = Executors.newSingleThreadExecutor()
-    open fun eventManager(
-        sender: EventSender,
-        remoteID: String,
-        connection: PeerConnection,
-        config: CallstatsConfig): EventManager = EventManagerImpl(sender, remoteID, connection, config)
-    open fun eventSender(
-        client: OkHttpClient,
-        executor: ExecutorService,
-        appID: String,
-        localID: String,
-        deviceID: String): EventSender = EventSenderImpl(client, executor, appID, localID, deviceID)
-    open fun systemStatus(): SystemStatusProvider = SystemStatus()
-  }
-
   companion object {
-    internal var dependency = Dependency()
+    internal var dependency = CallstatsInjector()
   }
 
   private val okHttpClient = dependency.okhttpClient()
@@ -151,7 +123,7 @@ class Callstats(
   /**
    * Give feedback on this conference call
    */
-  fun feedback(
+  fun sendUserFeedback(
       rating: Int,
       comment: String? = null,
       audioQuality: Int? = null,

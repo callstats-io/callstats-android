@@ -28,13 +28,18 @@ import org.webrtc.RTCStats
 /**
  * Interceptor to handle ICE events
  */
-internal class IceInterceptor(private val remoteID: String) : Interceptor {
+internal class IceInterceptor : Interceptor {
 
   private var iceConnectionState = NEW
   private var iceCandidatePair: IceCandidatePair? = null
   private var timestamp = mutableMapOf<IceConnectionState, Long?>(NEW to System.currentTimeMillis())
 
-  override fun process(webRTCEvent: CallstatsWebRTCFunction, connectionID: String, stats: Map<String, RTCStats>): Array<Event> {
+  override fun process(
+      webRTCEvent: CallstatsWebRTCFunction,
+      remoteID: String,
+      connectionID: String,
+      stats: Map<String, RTCStats>): Array<Event>
+  {
     // filter event
     if (webRTCEvent !is OnIceConnectionChange) {
       return emptyArray()

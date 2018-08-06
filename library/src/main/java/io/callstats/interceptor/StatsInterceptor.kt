@@ -9,9 +9,14 @@ import org.webrtc.RTCStats
 /**
  * Interceptor to handle stats submission events
  */
-class StatsInterceptor(private val remoteID: String): Interceptor {
+internal class StatsInterceptor : Interceptor {
 
-  override fun process(webRTCEvent: CallstatsWebRTCFunction, connectionID: String, stats: Map<String, RTCStats>): Array<Event> {
+  override fun process(
+      webRTCEvent: CallstatsWebRTCFunction,
+      remoteID: String,
+      connectionID: String,
+      stats: Map<String, RTCStats>): Array<Event>
+  {
     if (webRTCEvent !is OnStats) return emptyArray()
     return arrayOf(ConferenceStats(remoteID, connectionID, stats.values.toTypedArray()))
   }

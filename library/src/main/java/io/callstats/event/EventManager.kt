@@ -5,10 +5,7 @@ import io.callstats.CallstatsWebRTCFunction
 import io.callstats.OnStats
 import io.callstats.event.fabric.FabricSetupEvent
 import io.callstats.event.fabric.FabricTerminatedEvent
-import io.callstats.interceptor.FabricInterceptor
-import io.callstats.interceptor.IceInterceptor
 import io.callstats.interceptor.Interceptor
-import io.callstats.interceptor.StatsInterceptor
 import io.callstats.utils.md5
 import org.webrtc.PeerConnection
 import org.webrtc.RTCStatsReport
@@ -27,10 +24,7 @@ internal class EventManagerImpl(
     private val remoteID: String,
     private val connection: PeerConnection,
     private val config: CallstatsConfig,
-    private val interceptors: Array<Interceptor> = arrayOf(
-        FabricInterceptor(remoteID),
-        StatsInterceptor(remoteID),
-        IceInterceptor(remoteID))): EventManager
+    private val interceptors: Array<Interceptor> = emptyArray()): EventManager
 {
   private var connectionID = ""
   private var statsTimer: Timer? = null
@@ -42,7 +36,7 @@ internal class EventManagerImpl(
 
       // forward event
       interceptors.forEach { interceptor ->
-        val event = interceptor.process(webRTCEvent, connectionID, report.statsMap)
+        val event = interceptor.process(webRTCEvent, remoteID, connectionID, report.statsMap)
         event.forEach { sender.send(it) }
         event.firstOrNull { it is FabricSetupEvent } ?.also { startStatsTimer() }
         event.firstOrNull { it is FabricTerminatedEvent } ?.also { stopStatsTimer() }

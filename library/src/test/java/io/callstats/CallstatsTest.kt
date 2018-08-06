@@ -44,7 +44,7 @@ class CallstatsTest {
     MockitoAnnotations.initMocks(this)
 
     // use mock as sender dependency
-    Callstats.dependency = object : Callstats.Dependency() {
+    Callstats.dependency = object : CallstatsInjector() {
       override fun eventSender(
           client: OkHttpClient,
           executor: ExecutorService,
