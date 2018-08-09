@@ -6,6 +6,7 @@ import io.callstats.event.EventSender
 import io.callstats.event.EventSenderImpl
 import io.callstats.interceptor.FabricInterceptor
 import io.callstats.interceptor.IceInterceptor
+import io.callstats.interceptor.SsrcInterceptor
 import io.callstats.interceptor.StatsInterceptor
 import io.callstats.utils.SystemStatus
 import io.callstats.utils.SystemStatusProvider
@@ -32,12 +33,17 @@ internal open class CallstatsInjector {
 
   open fun eventManager(
       sender: EventSender,
+      localID: String,
       remoteID: String,
       connection: PeerConnection,
       config: CallstatsConfig): EventManager
   {
-    val interceptors = arrayOf(FabricInterceptor(), StatsInterceptor(), IceInterceptor())
-    return EventManagerImpl(sender, remoteID, connection, config, interceptors)
+    val interceptors = arrayOf(
+        FabricInterceptor(),
+        StatsInterceptor(),
+        IceInterceptor(),
+        SsrcInterceptor())
+    return EventManagerImpl(sender, localID, remoteID, connection, config, interceptors)
   }
 
   open fun systemStatus(): SystemStatusProvider = SystemStatus()

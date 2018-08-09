@@ -15,6 +15,7 @@ import io.callstats.event.info.IceCandidatePair
 import io.callstats.utils.candidatePairs
 import io.callstats.utils.localCandidates
 import io.callstats.utils.remoteCandidates
+import org.webrtc.PeerConnection
 import org.webrtc.PeerConnection.IceConnectionState
 import org.webrtc.PeerConnection.IceConnectionState.DISCONNECTED
 import org.webrtc.PeerConnection.IceConnectionState.FAILED
@@ -35,7 +36,9 @@ internal class IceInterceptor : Interceptor {
   private var timestamp = mutableMapOf<IceConnectionState, Long?>(NEW to System.currentTimeMillis())
 
   override fun process(
+      connection: PeerConnection,
       webRTCEvent: CallstatsWebRTCFunction,
+      localID: String,
       remoteID: String,
       connectionID: String,
       stats: Map<String, RTCStats>): Array<Event>

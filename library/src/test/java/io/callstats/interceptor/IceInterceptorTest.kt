@@ -12,16 +12,22 @@ import io.callstats.event.ice.IceTerminatedEvent
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mock
+import org.mockito.MockitoAnnotations
+import org.webrtc.PeerConnection
 import org.webrtc.PeerConnection.IceConnectionState
 import org.webrtc.RTCStats
 
 class IceInterceptorTest {
+  
+  @Mock private lateinit var connection: PeerConnection
 
   private lateinit var interceptor: IceInterceptor
   private lateinit var stats: Map<String, RTCStats>
 
   @Before
   fun setup() {
+    MockitoAnnotations.initMocks(this)
     stats = mapOf(
         "local" to RTCStats(0, "local-candidate", "id1", mapOf()),
         "remote" to RTCStats(0, "remote-candidate", "id2", mapOf()),
@@ -31,89 +37,89 @@ class IceInterceptorTest {
 
   @Test
   fun iceDisruptionStart() {
-    interceptor.process(OnIceConnectionChange(IceConnectionState.CONNECTED), "remote1", "con1", stats)
-    val events = interceptor.process(OnIceConnectionChange(IceConnectionState.DISCONNECTED), "remote1", "con1", stats)
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CONNECTED), "local1", "remote1", "con1", stats)
+    val events = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.DISCONNECTED), "local1", "remote1", "con1", stats)
     assertTrue(events.any { it is IceDisruptStartEvent })
 
-    interceptor.process(OnIceConnectionChange(IceConnectionState.COMPLETED), "remote1", "con1", stats)
-    val events2 = interceptor.process(OnIceConnectionChange(IceConnectionState.DISCONNECTED), "remote1", "con1", stats)
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.COMPLETED), "local1", "remote1", "con1", stats)
+    val events2 = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.DISCONNECTED), "local1", "remote1", "con1", stats)
     assertTrue(events2.any { it is IceDisruptStartEvent })
   }
 
   @Test
   fun iceDisruptionEnd() {
-    interceptor.process(OnIceConnectionChange(IceConnectionState.DISCONNECTED), "remote1", "con1", stats)
-    val events = interceptor.process(OnIceConnectionChange(IceConnectionState.CONNECTED), "remote1", "con1", stats)
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.DISCONNECTED), "local1", "remote1", "con1", stats)
+    val events = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CONNECTED), "local1", "remote1", "con1", stats)
     assertTrue(events.any { it is IceDisruptEndEvent })
 
-    interceptor.process(OnIceConnectionChange(IceConnectionState.DISCONNECTED), "remote1", "con1", stats)
-    val events2 = interceptor.process(OnIceConnectionChange(IceConnectionState.COMPLETED), "remote1", "con1", stats)
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.DISCONNECTED), "local1", "remote1", "con1", stats)
+    val events2 = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.COMPLETED), "local1", "remote1", "con1", stats)
     assertTrue(events2.any { it is IceDisruptEndEvent })
 
-    interceptor.process(OnIceConnectionChange(IceConnectionState.DISCONNECTED), "remote1", "con1", stats)
-    val events3 = interceptor.process(OnIceConnectionChange(IceConnectionState.CHECKING), "remote1", "con1", stats)
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.DISCONNECTED), "local1", "remote1", "con1", stats)
+    val events3 = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CHECKING), "local1", "remote1", "con1", stats)
     assertTrue(events3.any { it is IceDisruptEndEvent })
   }
 
   @Test
   fun iceRestart() {
-    interceptor.process(OnIceConnectionChange(IceConnectionState.COMPLETED), "remote1", "con1", stats)
-    val events = interceptor.process(OnIceConnectionChange(IceConnectionState.NEW), "remote1", "con1", stats)
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.COMPLETED), "local1", "remote1", "con1", stats)
+    val events = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.NEW), "local1", "remote1", "con1", stats)
     assertTrue(events.any { it is IceRestartEvent })
   }
 
   @Test
   fun iceFailed() {
-    interceptor.process(OnIceConnectionChange(IceConnectionState.CHECKING), "remote1", "con1", stats)
-    val events = interceptor.process(OnIceConnectionChange(IceConnectionState.FAILED), "remote1", "con1", stats)
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CHECKING), "local1", "remote1", "con1", stats)
+    val events = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.FAILED), "local1", "remote1", "con1", stats)
     assertTrue(events.any { it is IceFailedEvent })
 
-    interceptor.process(OnIceConnectionChange(IceConnectionState.DISCONNECTED), "remote1", "con1", stats)
-    val events2 = interceptor.process(OnIceConnectionChange(IceConnectionState.FAILED), "remote1", "con1", stats)
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.DISCONNECTED), "local1", "remote1", "con1", stats)
+    val events2 = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.FAILED), "local1", "remote1", "con1", stats)
     assertTrue(events2.any { it is IceFailedEvent })
   }
 
   @Test
   fun iceAbort() {
-    interceptor.process(OnIceConnectionChange(IceConnectionState.CHECKING), "remote1", "con1", stats)
-    val events = interceptor.process(OnIceConnectionChange(IceConnectionState.CLOSED), "remote1", "con1", stats)
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CHECKING), "local1", "remote1", "con1", stats)
+    val events = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CLOSED), "local1", "remote1", "con1", stats)
     assertTrue(events.any { it is IceAbortedEvent })
 
-    interceptor.process(OnIceConnectionChange(IceConnectionState.NEW), "remote1", "con1", stats)
-    val events2 = interceptor.process(OnIceConnectionChange(IceConnectionState.CLOSED), "remote1", "con1", stats)
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.NEW), "local1", "remote1", "con1", stats)
+    val events2 = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CLOSED), "local1", "remote1", "con1", stats)
     assertTrue(events2.any { it is IceAbortedEvent })
   }
 
   @Test
   fun iceTerminated() {
-    interceptor.process(OnIceConnectionChange(IceConnectionState.CONNECTED), "remote1", "con1", stats)
-    val events = interceptor.process(OnIceConnectionChange(IceConnectionState.CLOSED), "remote1", "con1", stats)
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CONNECTED), "local1", "remote1", "con1", stats)
+    val events = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CLOSED), "local1", "remote1", "con1", stats)
     assertTrue(events.any { it is IceTerminatedEvent })
 
-    interceptor.process(OnIceConnectionChange(IceConnectionState.COMPLETED), "remote1", "con1", stats)
-    val events2 = interceptor.process(OnIceConnectionChange(IceConnectionState.CLOSED), "remote1", "con1", stats)
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.COMPLETED), "local1", "remote1", "con1", stats)
+    val events2 = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CLOSED), "local1", "remote1", "con1", stats)
     assertTrue(events2.any { it is IceTerminatedEvent })
 
-    interceptor.process(OnIceConnectionChange(IceConnectionState.FAILED), "remote1", "con1", stats)
-    val events3 = interceptor.process(OnIceConnectionChange(IceConnectionState.CLOSED), "remote1", "con1", stats)
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.FAILED), "local1", "remote1", "con1", stats)
+    val events3 = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CLOSED), "local1", "remote1", "con1", stats)
     assertTrue(events3.any { it is IceTerminatedEvent })
 
-    interceptor.process(OnIceConnectionChange(IceConnectionState.DISCONNECTED), "remote1", "con1", stats)
-    val events4 = interceptor.process(OnIceConnectionChange(IceConnectionState.CLOSED), "remote1", "con1", stats)
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.DISCONNECTED), "local1", "remote1", "con1", stats)
+    val events4 = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CLOSED), "local1", "remote1", "con1", stats)
     assertTrue(events4.any { it is IceTerminatedEvent })
   }
 
   @Test
   fun iceConnectionDisruptionStart() {
-    interceptor.process(OnIceConnectionChange(IceConnectionState.CHECKING), "remote1", "con1", stats)
-    val events = interceptor.process(OnIceConnectionChange(IceConnectionState.DISCONNECTED), "remote1", "con1", stats)
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CHECKING), "local1", "remote1", "con1", stats)
+    val events = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.DISCONNECTED), "local1", "remote1", "con1", stats)
     assertTrue(events.any { it is IceConnectionDisruptStartEvent })
   }
 
   @Test
   fun iceConnectionDisruptionEnd() {
-    interceptor.process(OnIceConnectionChange(IceConnectionState.DISCONNECTED), "remote1", "con1", stats)
-    val events = interceptor.process(OnIceConnectionChange(IceConnectionState.CHECKING), "remote1", "con1", stats)
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.DISCONNECTED), "local1", "remote1", "con1", stats)
+    val events = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CHECKING), "local1", "remote1", "con1", stats)
     assertTrue(events.any { it is IceConnectionDisruptEndEvent })
   }
 }

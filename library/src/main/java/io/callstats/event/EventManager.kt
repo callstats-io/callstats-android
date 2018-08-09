@@ -21,6 +21,7 @@ internal interface EventManager {
 
 internal class EventManagerImpl(
     private val sender: EventSender,
+    private val localID: String,
     private val remoteID: String,
     private val connection: PeerConnection,
     private val config: CallstatsConfig,
@@ -36,7 +37,13 @@ internal class EventManagerImpl(
 
       // forward event
       interceptors.forEach { interceptor ->
-        val event = interceptor.process(webRTCEvent, remoteID, connectionID, report.statsMap)
+        val event = interceptor.process(
+            connection,
+            webRTCEvent,
+            localID,
+            remoteID,
+            connectionID,
+            report.statsMap)
         event.forEach { sender.send(it) }
         event.firstOrNull { it is FabricSetupEvent } ?.also { startStatsTimer() }
         event.firstOrNull { it is FabricTerminatedEvent } ?.also { stopStatsTimer() }

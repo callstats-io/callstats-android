@@ -54,7 +54,12 @@ class CallstatsTest {
         return sender
       }
 
-      override fun eventManager(sender: EventSender, remoteID: String, connection: PeerConnection, config: CallstatsConfig): EventManager {
+      override fun eventManager(
+          sender: EventSender,
+          localID: String,
+          remoteID: String,
+          connection: PeerConnection,
+          config: CallstatsConfig): EventManager {
         return manager
       }
 

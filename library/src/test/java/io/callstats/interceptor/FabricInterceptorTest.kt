@@ -8,22 +8,28 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mock
+import org.mockito.MockitoAnnotations
+import org.webrtc.PeerConnection
 import org.webrtc.PeerConnection.IceConnectionState
 import org.webrtc.RTCStats
 
 class FabricInterceptorTest {
 
+  @Mock private lateinit var connection: PeerConnection
+
   private lateinit var interceptor: FabricInterceptor
 
   @Before
   fun setup() {
+    MockitoAnnotations.initMocks(this)
     interceptor = FabricInterceptor()
   }
 
   @Test
   fun fabricConnectSend() {
     val stats = mapOf<String, RTCStats>()
-    val events = interceptor.process(OnIceConnectionChange(IceConnectionState.CONNECTED), "remote1", "con1", stats)
+    val events = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CONNECTED), "local1", "remote1", "con1", stats)
     assertEquals(1, events.size)
     assertTrue(events.first() is FabricSetupEvent)
   }
@@ -32,10 +38,10 @@ class FabricInterceptorTest {
   fun fabricConnectOnlyFirstTime() {
     connected()
     val stats = mapOf<String, RTCStats>()
-    val events = interceptor.process(OnIceConnectionChange(IceConnectionState.CONNECTED), "remote1", "con1", stats)
+    val events = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CONNECTED), "local1", "remote1", "con1", stats)
     assertEquals(0, events.size)
-    interceptor.process(OnIceConnectionChange(IceConnectionState.FAILED), "remote1", "con1", stats)
-    val events2 = interceptor.process(OnIceConnectionChange(IceConnectionState.CONNECTED), "remote1", "con1", stats)
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.FAILED), "local1", "remote1", "con1", stats)
+    val events2 = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CONNECTED), "local1", "remote1", "con1", stats)
     assertEquals(1, events2.size)
     assertFalse(events2.first() is FabricSetupEvent)
   }
@@ -43,7 +49,7 @@ class FabricInterceptorTest {
   @Test
   fun fabricStateChangeShouldNotSendIfNotConnected() {
     val stats = mapOf<String, RTCStats>()
-    val events = interceptor.process(OnIceConnectionChange(IceConnectionState.CHECKING), "remote1", "con1", stats)
+    val events = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CHECKING), "local1", "remote1", "con1", stats)
     assertEquals(0, events.size)
   }
 
@@ -51,7 +57,7 @@ class FabricInterceptorTest {
   fun fabricStateSend() {
     connected()
     val stats = mapOf<String, RTCStats>()
-    val events = interceptor.process(OnIceConnectionChange(IceConnectionState.CHECKING), "remote1", "con1", stats)
+    val events = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CHECKING), "local1", "remote1", "con1", stats)
     assertEquals(1, events.size)
     assertTrue(events.first() is FabricStateChangeEvent)
   }
@@ -59,6 +65,6 @@ class FabricInterceptorTest {
   // utils
 
   private fun connected() {
-    interceptor.process(OnIceConnectionChange(IceConnectionState.CONNECTED), "remote1", "con1", mapOf())
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CONNECTED), "local1", "remote1", "con1", mapOf())
   }
 }

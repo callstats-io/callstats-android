@@ -28,6 +28,7 @@ class EventManagerTest {
     MockitoAnnotations.initMocks(this)
     manager = EventManagerImpl(
         sender,
+        "local1",
         "remote1",
         connection,
         CallstatsConfig(),
@@ -37,14 +38,14 @@ class EventManagerTest {
       (it.arguments[0] as RTCStatsCollectorCallback).onStatsDelivered(RTCStatsReport(0, mapOf()))
     }
 
-    whenever(mockInterceptor1.process(any(), any(), any(), any())).thenReturn(emptyArray())
-    whenever(mockInterceptor2.process(any(), any(), any(), any())).thenReturn(emptyArray())
+    whenever(mockInterceptor1.process(any(), any(), any(), any(), any(), any())).thenReturn(emptyArray())
+    whenever(mockInterceptor2.process(any(), any(), any(), any(), any(), any())).thenReturn(emptyArray())
   }
 
   @Test
   fun forwardStatsToAllInterceptor() {
     manager.process(OnIceConnectionChange(PeerConnection.IceConnectionState.CONNECTED))
-    verify(mockInterceptor1).process(any(), any(), any(), any())
-    verify(mockInterceptor2).process(any(), any(), any(), any())
+    verify(mockInterceptor1).process(any(), any(), any(), any(), any(), any())
+    verify(mockInterceptor2).process(any(), any(), any(), any(), any(), any())
   }
 }

@@ -2,6 +2,7 @@ package io.callstats.interceptor
 
 import io.callstats.CallstatsWebRTCFunction
 import io.callstats.event.Event
+import org.webrtc.PeerConnection
 import org.webrtc.RTCStats
 
 /**
@@ -13,7 +14,9 @@ internal interface Interceptor {
    * Process the incoming type and data stats
    */
   fun process(
+      connection: PeerConnection,
       webRTCEvent: CallstatsWebRTCFunction,
+      localID: String,
       remoteID: String,
       connectionID: String,
       stats: Map<String, RTCStats>): Array<Event>

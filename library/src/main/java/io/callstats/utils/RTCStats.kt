@@ -2,6 +2,8 @@ package io.callstats.utils
 
 import io.callstats.event.info.IceCandidate
 import io.callstats.event.info.IceCandidatePair
+import io.callstats.event.info.Ssrc
+import org.webrtc.PeerConnection
 import org.webrtc.RTCStats
 
 typealias WebRTCStats = Map<String, RTCStats>
@@ -34,4 +36,13 @@ fun WebRTCStats.remoteCandidates(): List<IceCandidate> {
   return values
       .filter { it.type == "remote-candidate" }
       .map { IceCandidate.fromStats(it) }
+}
+
+/**
+ * Extract all SSRC details from stats and PeerConnection
+ */
+fun WebRTCStats.ssrcs(peerConnection: PeerConnection, localId: String, remoteId: String): List<Ssrc> {
+  return values
+      .filter { it.type == "inbound-rtp" || it.type == "outbound-rtp" }
+      .mapNotNull { Ssrc.fromStats(it, peerConnection, localId, remoteId) }
 }

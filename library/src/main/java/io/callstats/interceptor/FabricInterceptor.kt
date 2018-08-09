@@ -12,6 +12,7 @@ import io.callstats.event.fabric.FabricTerminatedEvent
 import io.callstats.utils.candidatePairs
 import io.callstats.utils.localCandidates
 import io.callstats.utils.remoteCandidates
+import org.webrtc.PeerConnection
 import org.webrtc.PeerConnection.IceConnectionState
 import org.webrtc.PeerConnection.IceGatheringState
 import org.webrtc.PeerConnection.SignalingState
@@ -29,7 +30,9 @@ internal class FabricInterceptor : Interceptor {
   private var connected = false
 
   override fun process(
+      connection: PeerConnection,
       webRTCEvent: CallstatsWebRTCFunction,
+      localID: String,
       remoteID: String,
       connectionID: String,
       stats: Map<String, RTCStats>): Array<Event>

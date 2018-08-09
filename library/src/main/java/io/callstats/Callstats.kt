@@ -31,7 +31,7 @@ import kotlin.concurrent.timerTask
 class Callstats(
     private val context: Context,
     appID: String,
-    localID: String,
+    private val localID: String,
     deviceID: String,
     jwt: String,
     private val username: String? = null,
@@ -51,7 +51,7 @@ class Callstats(
   private var aliveTimer: Timer? = null
   private var systemStatsTimer: Timer? = null
 
-  // connections
+  // event manager for each connection
   internal val eventManagers = mutableMapOf<String, EventManager>()
 
   init {
@@ -88,7 +88,12 @@ class Callstats(
    */
   fun addNewFabric(connection: PeerConnection, remoteUserID: String) {
     if (eventManagers.containsKey(remoteUserID)) return
-    eventManagers[remoteUserID] = dependency.eventManager(sender, remoteUserID, connection, configuration)
+    eventManagers[remoteUserID] = dependency.eventManager(
+        sender,
+        localID,
+        remoteUserID,
+        connection,
+        configuration)
   }
 
   /**

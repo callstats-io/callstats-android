@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Base64
 import android.util.Log
 import io.callstats.Callstats
+import io.callstats.OnAddStream
 import io.callstats.OnIceConnectionChange
 import io.callstats.OnIceGatheringChange
 import io.callstats.OnSignalingChange
@@ -316,6 +317,7 @@ class CsioRTC(
         peerVideoTracks[peerId] = it
         callback.onCsioRTCPeerVideoAvailable()
       }
+      callstats.reportEvent(peerId, OnAddStream())
     }
 
     override fun onDataChannel(channel: DataChannel) {
