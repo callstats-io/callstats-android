@@ -23,6 +23,7 @@ import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
 import org.webrtc.RtpReceiver
 import org.webrtc.SessionDescription
+import org.webrtc.SurfaceTextureHelper
 import org.webrtc.SurfaceViewRenderer
 import org.webrtc.VideoCapturer
 import org.webrtc.VideoSource
@@ -47,6 +48,7 @@ class CsioRTC(
     private const val DATA_CHANNEL_LABEL = "chat"
     private const val DATA_CHANNEL_NAME_KEY = "aliseName"
     private const val DATA_CHANNEL_MESSAGE_KEY = "message"
+    private const val SURFACE_THREAD_NAME = "surface_thread"
 
     private const val MESSAGE_ICE_KEY = "ice"
     private const val MESSAGE_OFFER_KEY = "offer"
@@ -78,8 +80,7 @@ class CsioRTC(
   private var localAudioSource: AudioSource? = null
   private var localAudioTrack: AudioTrack? = null
 
-  val localEglBase: EglBase = EglBase.create()
-  val remoteEglBase: EglBase = EglBase.create()
+  val sharedEglBase: EglBase = EglBase.create()
 
   private var peerConnections = mutableMapOf<String, PeerConnection>()
   private var peerVideoTracks = mutableMapOf<String, VideoTrack>()
@@ -89,9 +90,7 @@ class CsioRTC(
     val opt = PeerConnectionFactory.InitializationOptions.builder(context)
         .createInitializationOptions()
     PeerConnectionFactory.initialize(opt)
-    val factory = PeerConnectionFactory.builder().createPeerConnectionFactory()
-    factory.setVideoHwAccelerationOptions(localEglBase.eglBaseContext, remoteEglBase.eglBaseContext)
-    factory
+    PeerConnectionFactory.builder().createPeerConnectionFactory()
   }()
 
   // callstats
@@ -117,7 +116,11 @@ class CsioRTC(
 
     // video
     Utils.createCameraCapturer()?.let {
-      val videoSource = peerConnectionFactory.createVideoSource(it)
+      val videoSource = peerConnectionFactory.createVideoSource(false)
+      it.initialize(
+          SurfaceTextureHelper.create(SURFACE_THREAD_NAME, sharedEglBase.eglBaseContext),
+          context,
+          videoSource.capturerObserver)
       it.startCapture(LOCAL_VIDEO_WIDTH, LOCAL_VIDEO_HEIGHT, LOCAL_VIDEO_FPS)
       localVideoTrack = peerConnectionFactory.createVideoTrack(LOCAL_VIDEO_TRACK_LABEL, videoSource)
       localMediaStream?.addTrack(localVideoTrack)
@@ -142,8 +145,7 @@ class CsioRTC(
     localVideoCapturer?.dispose()
     localVideoSource?.dispose()
 
-    localEglBase.release()
-    remoteEglBase.release()
+    sharedEglBase.release()
     peerConnectionFactory.dispose()
   }
 

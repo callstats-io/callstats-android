@@ -46,8 +46,8 @@ class CallActivity : AppCompatActivity(), CsioRTC.Callback {
         Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID),
         this,
         name)
-    local_video_view.init(csioRTC.localEglBase.eglBaseContext, null)
-    remote_video_view.init(csioRTC.remoteEglBase.eglBaseContext, null)
+    local_video_view.init(csioRTC.sharedEglBase.eglBaseContext, null)
+    remote_video_view.init(csioRTC.sharedEglBase.eglBaseContext, null)
 
     // self video should be mirrored
     local_video_view.setMirror(true)
@@ -72,6 +72,7 @@ class CallActivity : AppCompatActivity(), CsioRTC.Callback {
 
     left_button.setOnClickListener {
       showingVideoFromPeer?.let {
+        if (peerIds.isEmpty()) return@setOnClickListener
         val found = peerIds.indexOf(it)
         val index = if (found - 1 < 0) peerIds.size - 1 else found - 1
         showVideoFromPeerId(peerIds[index])
@@ -80,6 +81,7 @@ class CallActivity : AppCompatActivity(), CsioRTC.Callback {
 
     right_button.setOnClickListener {
       showingVideoFromPeer?.let {
+        if (peerIds.isEmpty()) return@setOnClickListener
         val found = peerIds.indexOf(it)
         val index = if (found + 1 == peerIds.size) 0 else found + 1
         showVideoFromPeerId(peerIds[index])
@@ -130,8 +132,8 @@ class CallActivity : AppCompatActivity(), CsioRTC.Callback {
   private fun showFeedbackAndHang() {
     val view = LayoutInflater.from(this).inflate(R.layout.dialog_feedback, null)
     val ratingBar = view.findViewById<RatingBar>(R.id.rating)
-    ratingBar.setOnRatingBarChangeListener { ratingBar, rating, b ->
-      if(rating < 1f) ratingBar.rating = 1f
+    ratingBar.setOnRatingBarChangeListener { bar, rating, _ ->
+      if(rating < 1f) bar.rating = 1f
     }
     AlertDialog.Builder(ContextThemeWrapper(this, R.style.AppTheme_Dialog))
         .setView(view)
@@ -158,6 +160,8 @@ class CallActivity : AppCompatActivity(), CsioRTC.Callback {
       count_text.text = getString(R.string.call_no_participant, peerIds.size)
       // save peer ids to navigate
       this.peerIds = peerIds
+      // clear last frame
+      remote_video_view.clearImage()
     }
   }
 
