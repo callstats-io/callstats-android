@@ -16,7 +16,7 @@ class FabricDroppedEvent(
     val connectionID: String,
     val currIceCandidatePair: IceCandidatePair,
     val prevIceConnectionState: String,
-    val delay: Int) : FabricEvent()
+    val delay: Long) : FabricEvent()
 {
   val currIceConnectionState = "failed"
 

@@ -75,7 +75,7 @@ internal class IceInterceptor : Interceptor {
             newPair,
             prevPair,
             newState.name.toLowerCase(),
-            System.currentTimeMillis() - startTime)
+            newTimestamp - startTime)
       }
     }
 

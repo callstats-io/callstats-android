@@ -48,5 +48,10 @@ class FabricSetupEvent(
   val remoteIceCandidates: MutableList<IceCandidate> = mutableListOf()
   val iceCandidatePairs: MutableList<IceCandidatePair> = mutableListOf()
 
+  /**
+   * ID of the selected candidate pair
+   */
+  var selectedCandidatePairID: String? = null
+
   override fun path(): String = super.path() + "/setup"
 }

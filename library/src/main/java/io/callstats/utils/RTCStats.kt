@@ -9,6 +9,17 @@ import org.webrtc.RTCStats
 typealias WebRTCStats = Map<String, RTCStats>
 
 /**
+ * Extract the selected candidate pair ID
+ * @return selected candidate pair ID
+ */
+fun WebRTCStats.selectedCandidatePairId(): String? {
+  return values
+      .firstOrNull { it.type == "transport" }
+      ?.members
+      ?.get("selectedCandidatePairId") as? String
+}
+
+/**
  * Extract all candidate pairs from RTCStats
  * @return list of [IceCandidatePair]
  */

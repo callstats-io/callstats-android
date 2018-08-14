@@ -9,11 +9,19 @@ import io.callstats.event.fabric.FabricDroppedEvent
 import io.callstats.event.fabric.FabricSetupEvent
 import io.callstats.event.fabric.FabricStateChangeEvent
 import io.callstats.event.fabric.FabricTerminatedEvent
+import io.callstats.event.info.IceCandidatePair
 import io.callstats.utils.candidatePairs
 import io.callstats.utils.localCandidates
 import io.callstats.utils.remoteCandidates
+import io.callstats.utils.selectedCandidatePairId
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnection.IceConnectionState
+import org.webrtc.PeerConnection.IceConnectionState.DISCONNECTED
+import org.webrtc.PeerConnection.IceConnectionState.FAILED
+import org.webrtc.PeerConnection.IceConnectionState.NEW
+import org.webrtc.PeerConnection.IceConnectionState.CLOSED
+import org.webrtc.PeerConnection.IceConnectionState.CONNECTED
+import org.webrtc.PeerConnection.IceConnectionState.COMPLETED
 import org.webrtc.PeerConnection.IceGatheringState
 import org.webrtc.PeerConnection.SignalingState
 import org.webrtc.RTCStats
@@ -23,10 +31,12 @@ import org.webrtc.RTCStats
  */
 internal class FabricInterceptor : Interceptor {
 
-  private var createTimestamp = System.currentTimeMillis()
   private var iceConnectionState = IceConnectionState.NEW
   private var iceGatheringState = IceGatheringState.NEW
   private var signalingState = SignalingState.CLOSED
+  private var timestamp = mutableMapOf<IceConnectionState, Long?>(NEW to System.currentTimeMillis())
+  private var iceCandidatePair: IceCandidatePair? = null
+
   private var connected = false
 
   override fun process(
@@ -46,6 +56,7 @@ internal class FabricInterceptor : Interceptor {
     }
 
     var events = emptyArray<Event>()
+    val newTimestamp = System.currentTimeMillis()
 
     // [Fabric state change] if connection was setup, send fabric change
     if (connected
@@ -87,18 +98,18 @@ internal class FabricInterceptor : Interceptor {
     // [Fabric dropped] if connection was setup and ice state change from disconnect or complete to failed, send fabric drop
     if (connected
         && webRTCEvent is OnIceConnectionChange
-        && webRTCEvent.state == IceConnectionState.FAILED
-        && (iceConnectionState == IceConnectionState.COMPLETED || iceConnectionState == IceConnectionState.DISCONNECTED))
+        && webRTCEvent.state == FAILED
+        && (iceConnectionState == COMPLETED || iceConnectionState == DISCONNECTED))
     {
-      val pairs = stats.candidatePairs()
-
-      if (pairs.isNotEmpty()) {
+      val startTime = timestamp[iceConnectionState]
+      val pair = iceCandidatePair
+      if (pair != null && startTime != null) {
         events += FabricDroppedEvent(
             remoteID = remoteID,
             connectionID = connectionID,
             prevIceConnectionState = iceConnectionState.name.toLowerCase(),
-            delay = 0,
-            currIceCandidatePair = pairs[0]
+            delay = newTimestamp - startTime,
+            currIceCandidatePair = pair
         )
       }
     }
@@ -106,36 +117,48 @@ internal class FabricInterceptor : Interceptor {
     // [Fabric terminated] if connection was setup and ice state change to closed, send fabric terminated
     if (connected
         && webRTCEvent is OnIceConnectionChange
-        && webRTCEvent.state == IceConnectionState.CLOSED
-        && iceConnectionState != IceConnectionState.CLOSED)
+        && webRTCEvent.state == CLOSED
+        && iceConnectionState != CLOSED)
     {
       events += FabricTerminatedEvent(remoteID, connectionID)
     }
 
-    // [Fabric setup] if never connect and connect, send fabric setup
-    if (!connected
-        && webRTCEvent is OnIceConnectionChange
-        && webRTCEvent.state == IceConnectionState.CONNECTED)
+    // when ICE state = CONNECTED
+    if (webRTCEvent is OnIceConnectionChange && webRTCEvent.state == CONNECTED)
     {
-      connected = true
-
-      // create event
+      // get new pairs
+      val selectedPairId = stats.selectedCandidatePairId()
       val pairs = stats.candidatePairs()
-      val locals = stats.localCandidates()
-      val remotes = stats.remoteCandidates()
+      val newPair = pairs.firstOrNull { it.id == selectedPairId }
 
-      events += FabricSetupEvent(remoteID, connectionID).apply {
-        delay = System.currentTimeMillis() - createTimestamp
-        iceConnectivityDelay = delay
-        iceCandidatePairs.addAll(pairs)
-        localIceCandidates.addAll(locals)
-        remoteIceCandidates.addAll(remotes)
+      // [Fabric setup] if never connect and connect, send fabric setup
+      if (!connected) {
+        connected = true
+
+        val setupDelay = timestamp[NEW]?.let { newTimestamp - it } ?: 0
+        val locals = stats.localCandidates()
+        val remotes = stats.remoteCandidates()
+
+        events += FabricSetupEvent(remoteID, connectionID).apply {
+          delay = setupDelay
+          iceConnectivityDelay = delay
+          iceCandidatePairs.addAll(pairs)
+          localIceCandidates.addAll(locals)
+          remoteIceCandidates.addAll(remotes)
+          selectedCandidatePairID = selectedPairId
+        }
       }
+
+      // update current pair
+      iceCandidatePair = newPair
     }
 
-    // finally, update the state
+    // finally, update the states
     when (webRTCEvent) {
-      is OnIceConnectionChange -> iceConnectionState = webRTCEvent.state
+      is OnIceConnectionChange -> {
+        iceConnectionState = webRTCEvent.state
+        timestamp[iceConnectionState] = newTimestamp
+      }
       is OnIceGatheringChange -> iceGatheringState = webRTCEvent.state
       is OnSignalingChange -> signalingState = webRTCEvent.state
     }
