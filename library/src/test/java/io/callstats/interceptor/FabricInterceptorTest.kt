@@ -3,6 +3,7 @@ package io.callstats.interceptor
 import io.callstats.OnIceConnectionChange
 import io.callstats.event.fabric.FabricSetupEvent
 import io.callstats.event.fabric.FabricStateChangeEvent
+import io.callstats.event.fabric.FabricTransportChangeEvent
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -47,6 +48,19 @@ class FabricInterceptorTest {
   }
 
   @Test
+  fun fabricTransportChange() {
+    connected()
+    val stats = mapOf(
+        "local" to RTCStats(0, "local-candidate", "local", mapOf()),
+        "remote" to RTCStats(0, "remote-candidate", "remote", mapOf()),
+        "pair" to RTCStats(0, "candidate-pair", "pair", mapOf()),
+        "transport" to RTCStats(0, "transport", "transport", mapOf("selectedCandidatePairId" to "pair")))
+    val events = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CONNECTED), "local1", "remote1", "con1", stats)
+    assertEquals(1, events.size)
+    assertTrue(events.first() is FabricTransportChangeEvent)
+  }
+
+  @Test
   fun fabricStateChangeShouldNotSendIfNotConnected() {
     val stats = mapOf<String, RTCStats>()
     val events = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CHECKING), "local1", "remote1", "con1", stats)
@@ -65,6 +79,11 @@ class FabricInterceptorTest {
   // utils
 
   private fun connected() {
-    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CONNECTED), "local1", "remote1", "con1", mapOf())
+    val stats = mapOf(
+        "local" to RTCStats(0, "local-candidate", "local", mapOf()),
+        "remote" to RTCStats(0, "remote-candidate", "remote", mapOf()),
+        "pair" to RTCStats(0, "candidate-pair", "pair", mapOf()),
+        "transport" to RTCStats(0, "transport", "transport", mapOf("selectedCandidatePairId" to "pair")))
+    interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CONNECTED), "local1", "remote1", "con1", stats)
   }
 }

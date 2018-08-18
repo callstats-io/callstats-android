@@ -9,6 +9,7 @@ import io.callstats.event.fabric.FabricDroppedEvent
 import io.callstats.event.fabric.FabricSetupEvent
 import io.callstats.event.fabric.FabricStateChangeEvent
 import io.callstats.event.fabric.FabricTerminatedEvent
+import io.callstats.event.fabric.FabricTransportChangeEvent
 import io.callstats.event.info.IceCandidatePair
 import io.callstats.utils.candidatePairs
 import io.callstats.utils.localCandidates
@@ -130,15 +131,14 @@ internal class FabricInterceptor : Interceptor {
       val selectedPairId = stats.selectedCandidatePairId()
       val pairs = stats.candidatePairs()
       val newPair = pairs.firstOrNull { it.id == selectedPairId }
+      val locals = stats.localCandidates()
+      val remotes = stats.remoteCandidates()
 
       // [Fabric setup] if never connect and connect, send fabric setup
       if (!connected) {
         connected = true
 
         val setupDelay = timestamp[NEW]?.let { newTimestamp - it } ?: 0
-        val locals = stats.localCandidates()
-        val remotes = stats.remoteCandidates()
-
         events += FabricSetupEvent(remoteID, connectionID).apply {
           delay = setupDelay
           iceConnectivityDelay = delay
@@ -146,6 +146,24 @@ internal class FabricInterceptor : Interceptor {
           localIceCandidates.addAll(locals)
           remoteIceCandidates.addAll(remotes)
           selectedCandidatePairID = selectedPairId
+        }
+      }
+      // [Fabric transport change] if connect before, send transport change event
+      else {
+        val prevPair = iceCandidatePair
+        val lastConnectDelay = timestamp[CONNECTED]?.let { newTimestamp - it } ?: 0
+        if (prevPair != null && newPair != null) {
+          events += FabricTransportChangeEvent(
+              remoteID,
+              connectionID,
+              newPair,
+              prevPair,
+              webRTCEvent.state.name.toLowerCase(),
+              iceConnectionState.name.toLowerCase(),
+              lastConnectDelay).apply {
+            localIceCandidates.addAll(locals)
+            remoteIceCandidates.addAll(remotes)
+          }
         }
       }
 

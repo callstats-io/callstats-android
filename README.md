@@ -18,7 +18,7 @@ The project contains demo application which connect to https://demo.callstats.io
   - [x] Setup failed
   - [x] Terminated
   - [x] State change
-  - [ ] Transport change
+  - [x] Transport change
   - [x] Dropped
   - [ ] Action
 - [x] Stats submission
@@ -26,11 +26,11 @@ The project contains demo application which connect to https://demo.callstats.io
   - [x] System status stats
 - [x] ICE Events
 - [ ] Media Events
-- [ ] ~~Device Events~~
+- [ ] Device Events
 - [ ] Special Events
   - [x] Application Log
   - [x] Feedback
-  - [ ] ~~Dominant speaker~~
+  - [ ] Dominant speaker
   - [x] SSRC
   - [ ] SDP
 - [ ] Callstats Internal Events
