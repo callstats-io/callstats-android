@@ -5,10 +5,14 @@ import com.nhaarman.mockito_kotlin.argWhere
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import io.callstats.CallstatsConfig
+import io.callstats.OnAudio
 import io.callstats.OnHold
 import io.callstats.OnIceConnectionChange
 import io.callstats.OnResume
+import io.callstats.OnScreenShare
+import io.callstats.OnVideo
 import io.callstats.event.fabric.FabricActionEvent
+import io.callstats.event.media.MediaActionEvent
 import io.callstats.interceptor.Interceptor
 import org.junit.Before
 import org.junit.Test
@@ -60,5 +64,15 @@ class EventManagerTest {
     verify(sender).send(argWhere { it is FabricActionEvent && it.eventType == FabricActionEvent.EVENT_HOLD })
     manager.process(OnResume("remote1"))
     verify(sender).send(argWhere { it is FabricActionEvent && it.eventType == FabricActionEvent.EVENT_RESUME })
+  }
+
+  @Test
+  fun processAppMediaActionEvent() {
+    manager.process(OnAudio(true, "device1"))
+    verify(sender).send(argWhere { it is MediaActionEvent && it.eventType == MediaActionEvent.EVENT_MUTE })
+    manager.process(OnVideo(false, "device2"))
+    verify(sender).send(argWhere { it is MediaActionEvent && it.eventType == MediaActionEvent.EVENT_VIDEO_PAUSE })
+    manager.process(OnScreenShare(false, "device3"))
+    verify(sender).send(argWhere { it is MediaActionEvent && it.eventType == MediaActionEvent.EVENT_SCREENSHARE_STOP })
   }
 }

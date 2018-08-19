@@ -26,7 +26,9 @@ The project contains demo application which connect to https://demo.callstats.io
   - [x] System status stats
 - [x] ICE Events
 - [ ] Media Events
-- [ ] Device Events
+  - [x] Action
+  - [ ] Playback
+- [x] Device Events
 - [x] Special Events
   - [x] Application Log
   - [x] Feedback

@@ -2,14 +2,19 @@ package io.callstats.event
 
 import io.callstats.CallstatsApplicationEvent
 import io.callstats.CallstatsConfig
+import io.callstats.CallstatsMediaActionEvent
 import io.callstats.CallstatsWebRTCEvent
+import io.callstats.OnAudio
 import io.callstats.OnHold
 import io.callstats.OnIceConnectionChange
 import io.callstats.OnResume
+import io.callstats.OnScreenShare
 import io.callstats.OnStats
+import io.callstats.OnVideo
 import io.callstats.event.fabric.FabricActionEvent
 import io.callstats.event.fabric.FabricSetupEvent
 import io.callstats.event.fabric.FabricTerminatedEvent
+import io.callstats.event.media.MediaActionEvent
 import io.callstats.interceptor.Interceptor
 import io.callstats.utils.candidatePairs
 import io.callstats.utils.localCandidates
@@ -22,13 +27,25 @@ import java.util.Timer
 import kotlin.concurrent.timerTask
 
 /**
- * Manager than handle the stats incoming and forward to interceptors
+ * Manager than handle the events from WebRTC and Application
  */
 internal interface EventManager {
-  fun process(webRTCEvent: CallstatsWebRTCEvent)
-  fun process(applicationEvent: CallstatsApplicationEvent)
+
+  /**
+   * Process WebRTC events
+   */
+  fun process(event: CallstatsWebRTCEvent)
+
+  /**
+   * Process Application events
+   */
+  fun process(event: CallstatsApplicationEvent)
 }
 
+/**
+ * If it is WebRTC events, forward to interceptors and let them create events
+ * If it is Application events, convert to event directly
+ */
 internal class EventManagerImpl(
     private val sender: EventSender,
     private val localID: String,
@@ -40,10 +57,10 @@ internal class EventManagerImpl(
   internal var connectionID = ""
   private var statsTimer: Timer? = null
 
-  override fun process(webRTCEvent: CallstatsWebRTCEvent) {
+  override fun process(event: CallstatsWebRTCEvent) {
     connection.getStats { report ->
       // every time ice connected, update connection ID
-      if (webRTCEvent is OnIceConnectionChange && webRTCEvent.state == PeerConnection.IceConnectionState.CONNECTED) {
+      if (event is OnIceConnectionChange && event.state == PeerConnection.IceConnectionState.CONNECTED) {
         connectionID = createConnectionID(report)
       }
       // no connection ID, don't send
@@ -51,26 +68,34 @@ internal class EventManagerImpl(
 
       // forward event
       interceptors.forEach { interceptor ->
-        val event = interceptor.process(
+        val events = interceptor.process(
             connection,
-            webRTCEvent,
+            event,
             localID,
             remoteID,
             connectionID,
             report.statsMap)
-        event.forEach { sender.send(it) }
-        event.firstOrNull { it is FabricSetupEvent } ?.also { startStatsTimer() }
-        event.firstOrNull { it is FabricTerminatedEvent } ?.also { stopStatsTimer() }
+        events.forEach { sender.send(it) }
+        events.firstOrNull { it is FabricSetupEvent } ?.also { startStatsTimer() }
+        events.firstOrNull { it is FabricTerminatedEvent } ?.also { stopStatsTimer() }
       }
     }
   }
 
-  override fun process(applicationEvent: CallstatsApplicationEvent) {
+  override fun process(event: CallstatsApplicationEvent) {
     connectionID.takeIf { it.isNotEmpty() }
         ?.let { connId ->
-          when (applicationEvent) {
+          when (event) {
             is OnHold -> sender.send(FabricActionEvent(remoteID, connId, FabricActionEvent.EVENT_HOLD))
             is OnResume -> sender.send(FabricActionEvent(remoteID, connId, FabricActionEvent.EVENT_RESUME))
+            is CallstatsMediaActionEvent -> {
+              val eventType = when (event) {
+                is OnAudio -> if (event.mute) MediaActionEvent.EVENT_MUTE else MediaActionEvent.EVENT_UNMUTE
+                is OnVideo -> if (event.enable) MediaActionEvent.EVENT_VIDEO_RESUME else MediaActionEvent.EVENT_VIDEO_PAUSE
+                is OnScreenShare -> if (event.enable) MediaActionEvent.EVENT_SCREENSHARE_START else MediaActionEvent.EVENT_SCREENSHARE_STOP
+              }
+              sender.send(MediaActionEvent(remoteID, connId, eventType, event.mediaDeviceID))
+            }
           }
         }
   }

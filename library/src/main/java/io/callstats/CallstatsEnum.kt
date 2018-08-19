@@ -59,11 +59,17 @@ enum class LoggingType {
  * Application events
  */
 sealed class CallstatsApplicationEvent
-sealed class CallstatsApplicationPeerEvent(val remoteID: String): CallstatsApplicationEvent()
+sealed class CallstatsApplicationPeerEvent(val remoteIDList: Array<String>): CallstatsApplicationEvent()
 // app events
 class OnDominantSpeaker : CallstatsApplicationEvent()
 class OnDeviceConnected(val devices: Array<MediaDevice>) : CallstatsApplicationEvent()
 class OnDeviceActive(val devices: Array<MediaDevice>) : CallstatsApplicationEvent()
 // app peer events
-class OnHold(remoteID: String): CallstatsApplicationPeerEvent(remoteID)
-class OnResume(remoteID: String): CallstatsApplicationPeerEvent(remoteID)
+class OnHold(remoteID: String): CallstatsApplicationPeerEvent(arrayOf(remoteID))
+class OnResume(remoteID: String): CallstatsApplicationPeerEvent(arrayOf(remoteID))
+
+// media
+sealed class CallstatsMediaActionEvent(val mediaDeviceID: String, remoteIDList: Array<String> = emptyArray()) : CallstatsApplicationPeerEvent(remoteIDList)
+class OnAudio(val mute: Boolean, mediaDeviceID: String, remoteIDList: Array<String> = emptyArray()) : CallstatsMediaActionEvent(mediaDeviceID, remoteIDList)
+class OnVideo(val enable: Boolean, mediaDeviceID: String, remoteIDList: Array<String> = emptyArray()) : CallstatsMediaActionEvent(mediaDeviceID, remoteIDList)
+class OnScreenShare(val enable: Boolean, mediaDeviceID: String, remoteIDList: Array<String> = emptyArray()) : CallstatsMediaActionEvent(mediaDeviceID, remoteIDList)

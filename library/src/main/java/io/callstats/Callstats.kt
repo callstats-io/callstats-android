@@ -111,7 +111,12 @@ class Callstats(
    */
   fun reportEvent(type: CallstatsApplicationEvent) {
     if (type is CallstatsApplicationPeerEvent) {
-      eventManagers[type.remoteID]?.process(type)
+      // if empty remoteListID, send to all available peers
+      if (type.remoteIDList.isEmpty()) {
+        eventManagers.keys.forEach { eventManagers[it]?.process(type) }
+      } else {
+        type.remoteIDList.forEach { eventManagers[it]?.process(type) }
+      }
     } else {
       when (type) {
         is OnDominantSpeaker -> sender.send(DominantSpeakerEvent())
