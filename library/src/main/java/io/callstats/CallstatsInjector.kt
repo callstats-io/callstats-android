@@ -6,6 +6,7 @@ import io.callstats.event.EventSender
 import io.callstats.event.EventSenderImpl
 import io.callstats.interceptor.FabricInterceptor
 import io.callstats.interceptor.IceInterceptor
+import io.callstats.interceptor.SdpInterceptor
 import io.callstats.interceptor.SsrcInterceptor
 import io.callstats.interceptor.StatsInterceptor
 import io.callstats.utils.SystemStatus
@@ -42,7 +43,8 @@ internal open class CallstatsInjector {
         FabricInterceptor(),
         StatsInterceptor(),
         IceInterceptor(),
-        SsrcInterceptor())
+        SsrcInterceptor(),
+        SdpInterceptor())
     return EventManagerImpl(sender, localID, remoteID, connection, config, interceptors)
   }
 
