@@ -13,14 +13,14 @@ The project contains demo application which connect to https://demo.callstats.io
   - [x] User alive
   - [x] User left
   - [x] User detail
-- [ ] Fabric Events
+- [x] Fabric Events
   - [x] Setup
   - [x] Setup failed
   - [x] Terminated
   - [x] State change
   - [x] Transport change
   - [x] Dropped
-  - [ ] Action
+  - [x] Action
 - [x] Stats submission
   - [x] Conference stats
   - [x] System status stats

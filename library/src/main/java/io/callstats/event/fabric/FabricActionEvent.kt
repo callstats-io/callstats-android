@@ -11,5 +11,11 @@ class FabricActionEvent(
     val remoteID: String,
     val connectionID: String,
     val eventType: String) : FabricEvent() {
+
+  companion object {
+    const val EVENT_HOLD = "fabricHold"
+    const val EVENT_RESUME = "fabricResume"
+  }
+
   override fun path(): String = super.path() + "/actions"
 }

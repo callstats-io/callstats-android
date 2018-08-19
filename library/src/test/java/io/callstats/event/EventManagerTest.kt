@@ -1,10 +1,14 @@
 package io.callstats.event
 
 import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.argWhere
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import io.callstats.CallstatsConfig
+import io.callstats.OnHold
 import io.callstats.OnIceConnectionChange
+import io.callstats.OnResume
+import io.callstats.event.fabric.FabricActionEvent
 import io.callstats.interceptor.Interceptor
 import org.junit.Before
 import org.junit.Test
@@ -48,5 +52,13 @@ class EventManagerTest {
     manager.process(OnIceConnectionChange(PeerConnection.IceConnectionState.DISCONNECTED))
     verify(mockInterceptor1).process(any(), any(), any(), any(), any(), any())
     verify(mockInterceptor2).process(any(), any(), any(), any(), any(), any())
+  }
+
+  @Test
+  fun processAppHoldAndResumeEvent() {
+    manager.process(OnHold())
+    verify(sender).send(argWhere { it is FabricActionEvent && it.eventType == FabricActionEvent.EVENT_HOLD })
+    manager.process(OnResume())
+    verify(sender).send(argWhere { it is FabricActionEvent && it.eventType == FabricActionEvent.EVENT_RESUME })
   }
 }

@@ -1,6 +1,6 @@
 package io.callstats.interceptor
 
-import io.callstats.CallstatsWebRTCFunction
+import io.callstats.CallstatsWebRTCEvent
 import io.callstats.OnAddStream
 import io.callstats.OnIceConnectionChange
 import io.callstats.event.Event
@@ -18,7 +18,7 @@ internal class SsrcInterceptor : Interceptor {
 
   override fun process(
       connection: PeerConnection,
-      webRTCEvent: CallstatsWebRTCFunction,
+      webRTCEvent: CallstatsWebRTCEvent,
       localID: String,
       remoteID: String,
       connectionID: String,

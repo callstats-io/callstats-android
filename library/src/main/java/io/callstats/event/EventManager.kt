@@ -1,8 +1,13 @@
 package io.callstats.event
 
+import io.callstats.CallstatsApplicationEvent
 import io.callstats.CallstatsConfig
-import io.callstats.CallstatsWebRTCFunction
+import io.callstats.CallstatsWebRTCEvent
+import io.callstats.OnHold
+import io.callstats.OnIceConnectionChange
+import io.callstats.OnResume
 import io.callstats.OnStats
+import io.callstats.event.fabric.FabricActionEvent
 import io.callstats.event.fabric.FabricSetupEvent
 import io.callstats.event.fabric.FabricTerminatedEvent
 import io.callstats.interceptor.Interceptor
@@ -20,7 +25,8 @@ import kotlin.concurrent.timerTask
  * Manager than handle the stats incoming and forward to interceptors
  */
 internal interface EventManager {
-  fun process(webRTCEvent: CallstatsWebRTCFunction)
+  fun process(webRTCEvent: CallstatsWebRTCEvent)
+  fun process(applicationEvent: CallstatsApplicationEvent)
 }
 
 internal class EventManagerImpl(
@@ -34,7 +40,7 @@ internal class EventManagerImpl(
   internal var connectionID = ""
   private var statsTimer: Timer? = null
 
-  override fun process(webRTCEvent: CallstatsWebRTCFunction) {
+  override fun process(webRTCEvent: CallstatsWebRTCEvent) {
     connection.getStats { report ->
       // every time ice connected, update connection ID
       if (webRTCEvent is OnIceConnectionChange && webRTCEvent.state == PeerConnection.IceConnectionState.CONNECTED) {
@@ -57,6 +63,16 @@ internal class EventManagerImpl(
         event.firstOrNull { it is FabricTerminatedEvent } ?.also { stopStatsTimer() }
       }
     }
+  }
+
+  override fun process(applicationEvent: CallstatsApplicationEvent) {
+    connectionID.takeIf { it.isNotEmpty() }
+        ?.let { connId ->
+          when (applicationEvent) {
+            is OnHold -> sender.send(FabricActionEvent(remoteID, connId, FabricActionEvent.EVENT_HOLD))
+            is OnResume -> sender.send(FabricActionEvent(remoteID, connId, FabricActionEvent.EVENT_RESUME))
+          }
+        }
   }
 
   private fun startStatsTimer() {

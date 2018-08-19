@@ -100,7 +100,15 @@ class Callstats(
    * Report normal WebRTC event from observer
    * @param remoteUserID recipient's userID
    */
-  fun reportEvent(remoteUserID: String, type: CallstatsWebRTCFunction) {
+  fun reportEvent(remoteUserID: String, type: CallstatsWebRTCEvent) {
+    eventManagers[remoteUserID]?.process(type)
+  }
+
+  /**
+   * Report application event
+   * @param remoteUserID recipient's userID
+   */
+  fun reportEvent(remoteUserID: String, type: CallstatsApplicationEvent) {
     eventManagers[remoteUserID]?.process(type)
   }
 

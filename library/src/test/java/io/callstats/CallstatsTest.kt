@@ -134,12 +134,21 @@ class CallstatsTest {
   }
 
   @Test
-  fun reportEventSendThroughManager() {
+  fun reportWebRTCEventSendThroughManager() {
     callstats.addNewFabric(connection, "remote1")
     callstats.reportEvent(
         "remote1",
         OnIceConnectionChange(PeerConnection.IceConnectionState.CONNECTED))
-    verify(manager).process(any())
+    verify(manager).process(any<CallstatsWebRTCEvent>())
+  }
+
+  @Test
+  fun reportAppEventSendThroughManager() {
+    callstats.addNewFabric(connection, "remote1")
+    callstats.reportEvent(
+        "remote1",
+        OnHold())
+    verify(manager).process(any<CallstatsApplicationEvent>())
   }
 
   @Test

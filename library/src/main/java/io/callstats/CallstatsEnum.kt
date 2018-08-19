@@ -31,14 +31,14 @@ enum class CallstatsError(val value: String) {
 /**
  * WebRTC events that will be forwarded to callstats lib
  */
-sealed class CallstatsWebRTCFunction
+sealed class CallstatsWebRTCEvent
 // public
-data class OnIceConnectionChange(val state: PeerConnection.IceConnectionState): CallstatsWebRTCFunction()
-data class OnIceGatheringChange(val state: PeerConnection.IceGatheringState): CallstatsWebRTCFunction()
-data class OnSignalingChange(val state: PeerConnection.SignalingState): CallstatsWebRTCFunction()
-class OnAddStream: CallstatsWebRTCFunction()
+data class OnIceConnectionChange(val state: PeerConnection.IceConnectionState): CallstatsWebRTCEvent()
+data class OnIceGatheringChange(val state: PeerConnection.IceGatheringState): CallstatsWebRTCEvent()
+data class OnSignalingChange(val state: PeerConnection.SignalingState): CallstatsWebRTCEvent()
+class OnAddStream: CallstatsWebRTCEvent()
 // internal
-internal class OnStats: CallstatsWebRTCFunction()
+internal class OnStats: CallstatsWebRTCEvent()
 
 /**
  * Logging level to use with [Callstats.log]
@@ -53,3 +53,10 @@ enum class LoggingLevel {
 enum class LoggingType {
   TEXT, JSON
 }
+
+/**
+ * Application events
+ */
+sealed class CallstatsApplicationEvent
+class OnHold: CallstatsApplicationEvent()
+class OnResume: CallstatsApplicationEvent()
