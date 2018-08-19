@@ -58,5 +58,9 @@ enum class LoggingType {
  * Application events
  */
 sealed class CallstatsApplicationEvent
-class OnHold: CallstatsApplicationEvent()
-class OnResume: CallstatsApplicationEvent()
+sealed class CallstatsApplicationPeerEvent(val remoteID: String): CallstatsApplicationEvent()
+// app events
+class OnDominantSpeaker : CallstatsApplicationEvent()
+// app peer events
+class OnHold(remoteID: String): CallstatsApplicationPeerEvent(remoteID)
+class OnResume(remoteID: String): CallstatsApplicationPeerEvent(remoteID)

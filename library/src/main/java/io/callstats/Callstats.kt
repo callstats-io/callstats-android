@@ -8,6 +8,7 @@ import io.callstats.event.user.UserJoinEvent
 import io.callstats.event.user.UserLeftEvent
 import io.callstats.event.EventManager
 import io.callstats.event.info.Feedback
+import io.callstats.event.special.DominantSpeakerEvent
 import io.callstats.event.special.FeedbackEvent
 import io.callstats.event.special.LogEvent
 import io.callstats.event.stats.SystemStatusStats
@@ -106,10 +107,15 @@ class Callstats(
 
   /**
    * Report application event
-   * @param remoteUserID recipient's userID
    */
-  fun reportEvent(remoteUserID: String, type: CallstatsApplicationEvent) {
-    eventManagers[remoteUserID]?.process(type)
+  fun reportEvent(type: CallstatsApplicationEvent) {
+    if (type is CallstatsApplicationPeerEvent) {
+      eventManagers[type.remoteID]?.process(type)
+    } else {
+      when (type) {
+        is OnDominantSpeaker -> sender.send(DominantSpeakerEvent())
+      }
+    }
   }
 
   /**

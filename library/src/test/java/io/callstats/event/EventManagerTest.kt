@@ -56,9 +56,9 @@ class EventManagerTest {
 
   @Test
   fun processAppHoldAndResumeEvent() {
-    manager.process(OnHold())
+    manager.process(OnHold("remote1"))
     verify(sender).send(argWhere { it is FabricActionEvent && it.eventType == FabricActionEvent.EVENT_HOLD })
-    manager.process(OnResume())
+    manager.process(OnResume("remote1"))
     verify(sender).send(argWhere { it is FabricActionEvent && it.eventType == FabricActionEvent.EVENT_RESUME })
   }
 }

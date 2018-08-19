@@ -30,7 +30,7 @@ The project contains demo application which connect to https://demo.callstats.io
 - [ ] Special Events
   - [x] Application Log
   - [x] Feedback
-  - [ ] Dominant speaker
+  - [x] Dominant speaker
   - [x] SSRC
   - [ ] SDP
 - [ ] Callstats Internal Events

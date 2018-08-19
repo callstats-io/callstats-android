@@ -13,6 +13,7 @@ import io.callstats.event.EventSender
 import io.callstats.event.KeepAliveEvent
 import io.callstats.event.auth.TokenRequest
 import io.callstats.event.fabric.FabricSetupFailedEvent
+import io.callstats.event.special.DominantSpeakerEvent
 import io.callstats.event.special.FeedbackEvent
 import io.callstats.event.special.LogEvent
 import io.callstats.event.stats.SystemStatusStats
@@ -143,12 +144,17 @@ class CallstatsTest {
   }
 
   @Test
-  fun reportAppEventSendThroughManager() {
+  fun reportAppPeerEventSendThroughManager() {
     callstats.addNewFabric(connection, "remote1")
-    callstats.reportEvent(
-        "remote1",
-        OnHold())
+    callstats.reportEvent(OnHold("remote1"))
     verify(manager).process(any<CallstatsApplicationEvent>())
+  }
+
+  @Test
+  fun reportAppEventSendDirectly() {
+    callstats.addNewFabric(connection, "remote1")
+    callstats.reportEvent(OnDominantSpeaker())
+    verify(sender).send(any<DominantSpeakerEvent>())
   }
 
   @Test
