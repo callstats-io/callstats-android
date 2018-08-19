@@ -1,5 +1,6 @@
 package io.callstats
 
+import io.callstats.event.info.MediaDevice
 import org.webrtc.PeerConnection
 
 /**
@@ -61,6 +62,8 @@ sealed class CallstatsApplicationEvent
 sealed class CallstatsApplicationPeerEvent(val remoteID: String): CallstatsApplicationEvent()
 // app events
 class OnDominantSpeaker : CallstatsApplicationEvent()
+class OnDeviceConnected(val devices: Array<MediaDevice>) : CallstatsApplicationEvent()
+class OnDeviceActive(val devices: Array<MediaDevice>) : CallstatsApplicationEvent()
 // app peer events
 class OnHold(remoteID: String): CallstatsApplicationPeerEvent(remoteID)
 class OnResume(remoteID: String): CallstatsApplicationPeerEvent(remoteID)

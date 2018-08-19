@@ -7,6 +7,7 @@ import io.callstats.event.user.UserAliveEvent
 import io.callstats.event.user.UserJoinEvent
 import io.callstats.event.user.UserLeftEvent
 import io.callstats.event.EventManager
+import io.callstats.event.device.DeviceEvent
 import io.callstats.event.info.Feedback
 import io.callstats.event.special.DominantSpeakerEvent
 import io.callstats.event.special.FeedbackEvent
@@ -114,6 +115,8 @@ class Callstats(
     } else {
       when (type) {
         is OnDominantSpeaker -> sender.send(DominantSpeakerEvent())
+        is OnDeviceConnected -> sender.send(DeviceEvent(DeviceEvent.EVENT_CONNECTED, type.devices))
+        is OnDeviceActive -> sender.send(DeviceEvent(DeviceEvent.EVENT_ACTIVE, type.devices))
       }
     }
   }
