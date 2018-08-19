@@ -6,7 +6,11 @@ import io.callstats.OnStats
 import io.callstats.event.fabric.FabricSetupEvent
 import io.callstats.event.fabric.FabricTerminatedEvent
 import io.callstats.interceptor.Interceptor
+import io.callstats.utils.candidatePairs
+import io.callstats.utils.localCandidates
 import io.callstats.utils.md5
+import io.callstats.utils.remoteCandidates
+import io.callstats.utils.selectedCandidatePairId
 import org.webrtc.PeerConnection
 import org.webrtc.RTCStatsReport
 import java.util.Timer
@@ -27,13 +31,17 @@ internal class EventManagerImpl(
     private val config: CallstatsConfig,
     private val interceptors: Array<Interceptor> = emptyArray()): EventManager
 {
-  private var connectionID = ""
+  internal var connectionID = ""
   private var statsTimer: Timer? = null
 
   override fun process(webRTCEvent: CallstatsWebRTCFunction) {
     connection.getStats { report ->
-      // create connection id
-      if (connectionID.isEmpty()) connectionID = createConnectionID(report)
+      // every time ice connected, update connection ID
+      if (webRTCEvent is OnIceConnectionChange && webRTCEvent.state == PeerConnection.IceConnectionState.CONNECTED) {
+        connectionID = createConnectionID(report)
+      }
+      // no connection ID, don't send
+      if (connectionID.isEmpty()) return@getStats
 
       // forward event
       interceptors.forEach { interceptor ->
@@ -68,10 +76,17 @@ internal class EventManagerImpl(
 
   private fun createConnectionID(report: RTCStatsReport): String {
     // create connection ID from local and remote candidate IP + Port
-    val candidates = report.statsMap.values.filter { it.type == "local-candidate" || it.type == "remote-candidate" }
-    if (candidates.size != 2) return ""
-    val local = candidates.firstOrNull { it.type == "local-candidate" }?.members ?: return ""
-    val remote = candidates.firstOrNull { it.type == "remote-candidate" }?.members ?: return ""
-    return md5("${local["ip"]}${local["port"]}${remote["ip"]}${remote["port"]}")
+    val stats = report.statsMap
+    return stats.selectedCandidatePairId()
+        // find selected pair
+        ?.let { selectId -> stats.candidatePairs().firstOrNull { it.id == selectId } }
+        // find candidates and create ID
+        ?.let { pair ->
+          val local = stats.localCandidates().firstOrNull { it.id == pair.localCandidateId }
+          val remote = stats.remoteCandidates().firstOrNull { it.id == pair.remoteCandidateId }
+          if (local != null && remote != null) {
+            md5("${local.ip}${local.port}${remote.ip}${remote.port}")
+          } else null
+        } ?: ""
   }
 }

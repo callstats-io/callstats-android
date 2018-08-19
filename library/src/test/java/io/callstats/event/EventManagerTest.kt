@@ -21,7 +21,7 @@ class EventManagerTest {
   @Mock private lateinit var sender: EventSender
   @Mock private lateinit var connection: PeerConnection
 
-  private lateinit var manager: EventManager
+  private lateinit var manager: EventManagerImpl
 
   @Before
   fun setup() {
@@ -33,6 +33,7 @@ class EventManagerTest {
         connection,
         CallstatsConfig(),
         arrayOf(mockInterceptor1, mockInterceptor2))
+    manager.connectionID = "con1"
 
     whenever(connection.getStats(any())).thenAnswer {
       (it.arguments[0] as RTCStatsCollectorCallback).onStatsDelivered(RTCStatsReport(0, mapOf()))
@@ -44,7 +45,7 @@ class EventManagerTest {
 
   @Test
   fun forwardStatsToAllInterceptor() {
-    manager.process(OnIceConnectionChange(PeerConnection.IceConnectionState.CONNECTED))
+    manager.process(OnIceConnectionChange(PeerConnection.IceConnectionState.DISCONNECTED))
     verify(mockInterceptor1).process(any(), any(), any(), any(), any(), any())
     verify(mockInterceptor2).process(any(), any(), any(), any(), any(), any())
   }
