@@ -9,7 +9,7 @@ import io.callstats.event.info.MediaDevice
  * @param eventType "connectedDeviceList" "activeDeviceList"
  * @param mediaDeviceList list of devices
  */
-class DeviceEvent(val eventType: String, val mediaDeviceList: Array<MediaDevice>) : SessionEvent() {
+internal class DeviceEvent(val eventType: String, val mediaDeviceList: Array<MediaDevice>) : SessionEvent() {
 
   companion object {
     const val EVENT_CONNECTED = "connectedDeviceList"

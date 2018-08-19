@@ -10,7 +10,7 @@ import io.callstats.event.info.IceCandidatePair
  * @param connectionID Unique identifier of connection between two endpoints.
  * This identifier should remain the same throughout the life-time of the connection.
  */
-class FabricSetupEvent(
+internal class FabricSetupEvent(
     val remoteID: String,
     val connectionID: String) : FabricEvent()
 {

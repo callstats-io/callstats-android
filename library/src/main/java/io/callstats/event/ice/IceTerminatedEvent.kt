@@ -10,7 +10,7 @@ import io.callstats.event.info.IceCandidatePair
  * @param prevIceCandidatePair previous [IceCandidatePair]
  * @param prevIceConnectionState previous ice connection state "connected" or "completed" or "failed" or "disconnected"
  */
-class IceTerminatedEvent(
+internal class IceTerminatedEvent(
     val remoteID: String,
     val connectionID: String,
     val prevIceCandidatePair: IceCandidatePair,

@@ -11,7 +11,7 @@ import io.callstats.event.info.IceCandidatePair
  * @param prevIceConnectionState current ice connection state "checking" or "disconnected"
  * @param delay delay in milliseconds (example: 3.5 seconds is 3500 in milliseconds)
  */
-class IceFailedEvent(
+internal class IceFailedEvent(
     val remoteID: String,
     val connectionID: String,
     val prevIceConnectionState: String,

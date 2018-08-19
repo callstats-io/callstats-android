@@ -1,6 +1,6 @@
 package io.callstats.interceptor
 
-import io.callstats.CallstatsWebRTCEvent
+import io.callstats.WebRTCEvent
 import io.callstats.event.Event
 import org.webrtc.PeerConnection
 import org.webrtc.RTCStats
@@ -15,7 +15,7 @@ internal interface Interceptor {
    */
   fun process(
       connection: PeerConnection,
-      webRTCEvent: CallstatsWebRTCEvent,
+      webRTCEvent: WebRTCEvent,
       localID: String,
       remoteID: String,
       connectionID: String,

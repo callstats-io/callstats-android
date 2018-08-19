@@ -1,6 +1,6 @@
 package io.callstats.interceptor
 
-import io.callstats.OnStats
+import io.callstats.WebRTCEvent.OnStats
 import io.callstats.event.stats.ConferenceStats
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

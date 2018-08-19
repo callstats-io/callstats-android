@@ -1,6 +1,6 @@
 package io.callstats.interceptor
 
-import io.callstats.OnIceConnectionChange
+import io.callstats.WebRTCEvent.OnIceConnectionChange
 import io.callstats.event.fabric.FabricSetupEvent
 import io.callstats.event.fabric.FabricStateChangeEvent
 import io.callstats.event.fabric.FabricTransportChangeEvent

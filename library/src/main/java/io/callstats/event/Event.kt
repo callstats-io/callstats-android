@@ -9,7 +9,7 @@ import okhttp3.RequestBody
 /**
  * Base event
  */
-abstract class Event {
+internal abstract class Event {
 
   companion object {
     private const val HEADER_AUTHORIZATION = "Authorization"
@@ -77,7 +77,7 @@ abstract class Event {
 /**
  * Event that can be sent after authenticated
  */
-abstract class AuthenticatedEvent : Event() {
+internal abstract class AuthenticatedEvent : Event() {
   @Transient var appID: String? = null
   @Transient var token: String? = null
 }
@@ -85,7 +85,7 @@ abstract class AuthenticatedEvent : Event() {
 /**
  * Event that can be sent after session created
  */
-abstract class SessionEvent: AuthenticatedEvent() {
+internal abstract class SessionEvent: AuthenticatedEvent() {
   @Transient var ucID: String? = null
   @Transient var confID: String? = null
 }
@@ -93,19 +93,19 @@ abstract class SessionEvent: AuthenticatedEvent() {
 /**
  * Event to keep the session alive
  */
-abstract class KeepAliveEvent: SessionEvent()
+internal abstract class KeepAliveEvent: SessionEvent()
 
 /**
  * Event to create session
  */
-abstract class CreateSessionEvent: AuthenticatedEvent() {
+internal abstract class CreateSessionEvent: AuthenticatedEvent() {
   @Transient var confID: String? = null
 }
 
 /**
  * Event that do authentication
  */
-interface AuthenticationEvent {
+internal interface AuthenticationEvent {
   val code: String
   val clientID: String
 }

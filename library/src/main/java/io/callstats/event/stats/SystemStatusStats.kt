@@ -5,7 +5,7 @@ import io.callstats.event.AuthenticatedEvent
 /**
  * Submitting System status information for a conference such as battery level, cpu , etc.
  */
-class SystemStatusStats: AuthenticatedEvent() {
+internal class SystemStatusStats: AuthenticatedEvent() {
 
   /**
    * CPU level in percentage

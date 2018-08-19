@@ -9,7 +9,7 @@ package io.callstats.event.media
  * @param eventType "audioMute" "audioUnmute" "screenShareStart" "screenShareStop" "videoPause" "videoResume"
  * @param mediaDeviceID Media Device ID
  */
-class MediaActionEvent(
+internal class MediaActionEvent(
     val remoteID: String,
     val connectionID: String,
     val eventType: String,

@@ -10,7 +10,7 @@ import io.callstats.event.info.Ssrc
  * @param remoteID remote user identifier
  * @param connectionID Unique identifier of connection between two endpoints.
  */
-class SsrcEvent(
+internal class SsrcEvent(
     val remoteID: String,
     val connectionID: String) : SessionEvent()
 {

@@ -12,7 +12,7 @@ import io.callstats.event.info.IceCandidatePair
  * @param currIceConnectionState current ice connection state "connected" or "completed" or "checking"
  * @param delay delay
  */
-class IceDisruptEndEvent(
+internal class IceDisruptEndEvent(
     val remoteID: String,
     val connectionID: String,
     val currIceCandidatePair: IceCandidatePair,

@@ -8,7 +8,7 @@ import io.callstats.event.SessionEvent
  * @param remoteID remote user identifier
  * @param connectionID Unique identifier of connection between two endpoints.
  */
-class SdpEvent(
+internal class SdpEvent(
     val remoteID: String,
     val connectionID: String) : SessionEvent() {
 

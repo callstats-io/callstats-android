@@ -32,14 +32,15 @@ enum class CallstatsError(val value: String) {
 /**
  * WebRTC events that will be forwarded to callstats lib
  */
-sealed class CallstatsWebRTCEvent
-// public
-data class OnIceConnectionChange(val state: PeerConnection.IceConnectionState): CallstatsWebRTCEvent()
-data class OnIceGatheringChange(val state: PeerConnection.IceGatheringState): CallstatsWebRTCEvent()
-data class OnSignalingChange(val state: PeerConnection.SignalingState): CallstatsWebRTCEvent()
-class OnAddStream: CallstatsWebRTCEvent()
-// internal
-internal class OnStats: CallstatsWebRTCEvent()
+sealed class WebRTCEvent {
+  // public
+  data class OnIceConnectionChange(val state: PeerConnection.IceConnectionState) : WebRTCEvent()
+  data class OnIceGatheringChange(val state: PeerConnection.IceGatheringState) : WebRTCEvent()
+  data class OnSignalingChange(val state: PeerConnection.SignalingState) : WebRTCEvent()
+  class OnAddStream : WebRTCEvent()
+  // internal
+  internal class OnStats : WebRTCEvent()
+}
 
 /**
  * Logging level to use with [Callstats.log]
@@ -58,18 +59,18 @@ enum class LoggingType {
 /**
  * Application events
  */
-sealed class CallstatsApplicationEvent
-sealed class CallstatsApplicationPeerEvent(val remoteIDList: Array<String>): CallstatsApplicationEvent()
+sealed class ApplicationEvent
+sealed class ApplicationPeerEvent(val remoteIDList: Array<String>): ApplicationEvent()
 // app events
-class OnDominantSpeaker : CallstatsApplicationEvent()
-class OnDeviceConnected(val devices: Array<MediaDevice>) : CallstatsApplicationEvent()
-class OnDeviceActive(val devices: Array<MediaDevice>) : CallstatsApplicationEvent()
+class OnDominantSpeaker : ApplicationEvent()
+class OnDeviceConnected(val devices: Array<MediaDevice>) : ApplicationEvent()
+class OnDeviceActive(val devices: Array<MediaDevice>) : ApplicationEvent()
 // app peer events
-class OnHold(remoteID: String): CallstatsApplicationPeerEvent(arrayOf(remoteID))
-class OnResume(remoteID: String): CallstatsApplicationPeerEvent(arrayOf(remoteID))
+class OnHold(remoteID: String): ApplicationPeerEvent(arrayOf(remoteID))
+class OnResume(remoteID: String): ApplicationPeerEvent(arrayOf(remoteID))
 
 // media
-sealed class CallstatsMediaActionEvent(val mediaDeviceID: String, remoteIDList: Array<String> = emptyArray()) : CallstatsApplicationPeerEvent(remoteIDList)
-class OnAudio(val mute: Boolean, mediaDeviceID: String, remoteIDList: Array<String> = emptyArray()) : CallstatsMediaActionEvent(mediaDeviceID, remoteIDList)
-class OnVideo(val enable: Boolean, mediaDeviceID: String, remoteIDList: Array<String> = emptyArray()) : CallstatsMediaActionEvent(mediaDeviceID, remoteIDList)
-class OnScreenShare(val enable: Boolean, mediaDeviceID: String, remoteIDList: Array<String> = emptyArray()) : CallstatsMediaActionEvent(mediaDeviceID, remoteIDList)
+sealed class MediaActionEvent(val mediaDeviceID: String, remoteIDList: Array<String> = emptyArray()) : ApplicationPeerEvent(remoteIDList)
+class OnAudio(val mute: Boolean, mediaDeviceID: String, remoteIDList: Array<String> = emptyArray()) : MediaActionEvent(mediaDeviceID, remoteIDList)
+class OnVideo(val enable: Boolean, mediaDeviceID: String, remoteIDList: Array<String> = emptyArray()) : MediaActionEvent(mediaDeviceID, remoteIDList)
+class OnScreenShare(val enable: Boolean, mediaDeviceID: String, remoteIDList: Array<String> = emptyArray()) : MediaActionEvent(mediaDeviceID, remoteIDList)

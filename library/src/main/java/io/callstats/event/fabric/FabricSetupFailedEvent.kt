@@ -8,7 +8,7 @@ package io.callstats.event.fabric
  * @param name Name
  * @param message Message
  */
-class FabricSetupFailedEvent(val reason: String) : FabricEvent()
+internal class FabricSetupFailedEvent(val reason: String) : FabricEvent()
 {
   var name: String? = null
   var message: String? = null

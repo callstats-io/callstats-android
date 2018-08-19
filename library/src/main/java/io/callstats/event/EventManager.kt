@@ -1,15 +1,14 @@
 package io.callstats.event
 
-import io.callstats.CallstatsApplicationEvent
+import io.callstats.ApplicationEvent
 import io.callstats.CallstatsConfig
-import io.callstats.CallstatsMediaActionEvent
-import io.callstats.CallstatsWebRTCEvent
+import io.callstats.WebRTCEvent
+import io.callstats.WebRTCEvent.OnIceConnectionChange
+import io.callstats.WebRTCEvent.OnStats
 import io.callstats.OnAudio
 import io.callstats.OnHold
-import io.callstats.OnIceConnectionChange
 import io.callstats.OnResume
 import io.callstats.OnScreenShare
-import io.callstats.OnStats
 import io.callstats.OnVideo
 import io.callstats.event.fabric.FabricActionEvent
 import io.callstats.event.fabric.FabricSetupEvent
@@ -34,12 +33,12 @@ internal interface EventManager {
   /**
    * Process WebRTC events
    */
-  fun process(event: CallstatsWebRTCEvent)
+  fun process(event: WebRTCEvent)
 
   /**
    * Process Application events
    */
-  fun process(event: CallstatsApplicationEvent)
+  fun process(event: ApplicationEvent)
 }
 
 /**
@@ -57,7 +56,7 @@ internal class EventManagerImpl(
   internal var connectionID = ""
   private var statsTimer: Timer? = null
 
-  override fun process(event: CallstatsWebRTCEvent) {
+  override fun process(event: WebRTCEvent) {
     connection.getStats { report ->
       // every time ice connected, update connection ID
       if (event is OnIceConnectionChange && event.state == PeerConnection.IceConnectionState.CONNECTED) {
@@ -82,13 +81,13 @@ internal class EventManagerImpl(
     }
   }
 
-  override fun process(event: CallstatsApplicationEvent) {
+  override fun process(event: ApplicationEvent) {
     connectionID.takeIf { it.isNotEmpty() }
         ?.let { connId ->
           when (event) {
             is OnHold -> sender.send(FabricActionEvent(remoteID, connId, FabricActionEvent.EVENT_HOLD))
             is OnResume -> sender.send(FabricActionEvent(remoteID, connId, FabricActionEvent.EVENT_RESUME))
-            is CallstatsMediaActionEvent -> {
+            is io.callstats.MediaActionEvent -> {
               val eventType = when (event) {
                 is OnAudio -> if (event.mute) MediaActionEvent.EVENT_MUTE else MediaActionEvent.EVENT_UNMUTE
                 is OnVideo -> if (event.enable) MediaActionEvent.EVENT_VIDEO_RESUME else MediaActionEvent.EVENT_VIDEO_PAUSE

@@ -8,7 +8,7 @@ import io.callstats.event.SessionEvent
  * @param connectionID Unique identifier of connection between two endpoints. This identifier should remain the same throughout the life-time of the connection.
  * @param stats An array of stats objects
  */
-class ConferenceStats(
+internal class ConferenceStats(
     val remoteID: String,
     val connectionID: String,
     val stats: Array<Any>) : SessionEvent()

@@ -12,7 +12,7 @@ import io.callstats.event.info.IceCandidatePair
  * @param prevIceCandidatePair previous [IceCandidatePair]
  * @param delay delay
  */
-class FabricTransportChangeEvent(
+internal class FabricTransportChangeEvent(
     val remoteID: String,
     val connectionID: String,
     val currIceCandidatePair: IceCandidatePair,

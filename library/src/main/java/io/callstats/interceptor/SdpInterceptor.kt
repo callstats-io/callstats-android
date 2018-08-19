@@ -1,7 +1,7 @@
 package io.callstats.interceptor
 
-import io.callstats.CallstatsWebRTCEvent
-import io.callstats.OnIceConnectionChange
+import io.callstats.WebRTCEvent
+import io.callstats.WebRTCEvent.OnIceConnectionChange
 import io.callstats.event.Event
 import io.callstats.event.special.SdpEvent
 import org.webrtc.PeerConnection
@@ -11,13 +11,13 @@ import org.webrtc.RTCStats
 /**
  * Interceptor to send sdp events
  */
-class SdpInterceptor : Interceptor {
+internal class SdpInterceptor : Interceptor {
 
   private var connected = false
 
   override fun process(
       connection: PeerConnection,
-      webRTCEvent: CallstatsWebRTCEvent,
+      webRTCEvent: WebRTCEvent,
       localID: String,
       remoteID: String,
       connectionID: String,

@@ -7,7 +7,7 @@ package io.callstats.event.fabric
  * @param connectionID Unique identifier of connection between two endpoints. This identifier should remain the same throughout the life-time of the connection.
  * @param eventType Event Type either "fabricHold" or "fabricResume"
  */
-class FabricActionEvent(
+internal class FabricActionEvent(
     val remoteID: String,
     val connectionID: String,
     val eventType: String) : FabricEvent() {

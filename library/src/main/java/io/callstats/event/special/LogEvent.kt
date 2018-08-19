@@ -9,7 +9,7 @@ import io.callstats.event.SessionEvent
  * @param message application message
  * @param messageType "text" "json" "domError"
  */
-class LogEvent(
+internal class LogEvent(
     val level: String,
     val message: String,
     val messageType: String) : SessionEvent()

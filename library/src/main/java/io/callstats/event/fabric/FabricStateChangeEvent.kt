@@ -9,7 +9,7 @@ package io.callstats.event.fabric
  * @param newState New state
  * @param changedState which kind of state changes "signalingState" or "connectionState" or "iceConnectionState" or "iceGatheringState"
  */
-class FabricStateChangeEvent(
+internal class FabricStateChangeEvent(
     val remoteID: String,
     val connectionID: String,
     val prevState: String,

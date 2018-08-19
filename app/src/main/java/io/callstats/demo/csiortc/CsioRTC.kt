@@ -4,10 +4,10 @@ import android.content.Context
 import android.util.Base64
 import android.util.Log
 import io.callstats.Callstats
-import io.callstats.OnAddStream
-import io.callstats.OnIceConnectionChange
-import io.callstats.OnIceGatheringChange
-import io.callstats.OnSignalingChange
+import io.callstats.WebRTCEvent.OnAddStream
+import io.callstats.WebRTCEvent.OnIceConnectionChange
+import io.callstats.WebRTCEvent.OnIceGatheringChange
+import io.callstats.WebRTCEvent.OnSignalingChange
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import org.json.JSONObject

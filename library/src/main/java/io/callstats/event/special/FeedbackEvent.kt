@@ -9,6 +9,6 @@ import io.callstats.event.info.Feedback
  *
  * @param feedback [Feedback] info
  */
-class FeedbackEvent(val feedback: Feedback) : SessionEvent() {
+internal class FeedbackEvent(val feedback: Feedback) : SessionEvent() {
   override fun path() = "events/feedback"
 }

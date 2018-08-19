@@ -8,7 +8,7 @@ import io.callstats.event.info.EndpointInfo
  * or start a new conference. If there are no participants in the given conference then
  * a new conference will be created with the conferenceID provided.
  */
-class UserJoinEvent(confID: String, appVersion: String? = null) : CreateSessionEvent() {
+internal class UserJoinEvent(confID: String, appVersion: String? = null) : CreateSessionEvent() {
 
   init { this.confID = confID }
 

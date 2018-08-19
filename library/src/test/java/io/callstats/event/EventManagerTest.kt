@@ -5,9 +5,9 @@ import com.nhaarman.mockito_kotlin.argWhere
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import io.callstats.CallstatsConfig
+import io.callstats.WebRTCEvent.OnIceConnectionChange
 import io.callstats.OnAudio
 import io.callstats.OnHold
-import io.callstats.OnIceConnectionChange
 import io.callstats.OnResume
 import io.callstats.OnScreenShare
 import io.callstats.OnVideo

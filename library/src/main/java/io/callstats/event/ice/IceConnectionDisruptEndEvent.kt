@@ -7,7 +7,7 @@ package io.callstats.event.ice
  * @param connectionID Unique identifier of connection between two endpoints. This identifier should remain the same throughout the life-time of the connection.
  * @param delay delay in milliseconds (example: 3.5 seconds is 3500 in milliseconds)
  */
-class IceConnectionDisruptEndEvent(
+internal class IceConnectionDisruptEndEvent(
     val remoteID: String,
     val connectionID: String,
     val delay: Long) : IceEvent()

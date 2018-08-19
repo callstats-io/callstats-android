@@ -102,15 +102,15 @@ class Callstats(
    * Report normal WebRTC event from observer
    * @param remoteUserID recipient's userID
    */
-  fun reportEvent(remoteUserID: String, type: CallstatsWebRTCEvent) {
+  fun reportEvent(remoteUserID: String, type: WebRTCEvent) {
     eventManagers[remoteUserID]?.process(type)
   }
 
   /**
    * Report application event
    */
-  fun reportEvent(type: CallstatsApplicationEvent) {
-    if (type is CallstatsApplicationPeerEvent) {
+  fun reportEvent(type: ApplicationEvent) {
+    if (type is ApplicationPeerEvent) {
       // if empty remoteListID, send to all available peers
       if (type.remoteIDList.isEmpty()) {
         eventManagers.keys.forEach { eventManagers[it]?.process(type) }

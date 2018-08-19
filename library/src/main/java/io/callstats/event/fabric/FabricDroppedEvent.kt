@@ -11,7 +11,7 @@ import io.callstats.event.info.IceCandidatePair
  * @param prevIceConnectionState previous ice connection state "disconnected" or "completed"
  * @param delay delay
  */
-class FabricDroppedEvent(
+internal class FabricDroppedEvent(
     val remoteID: String,
     val connectionID: String,
     val currIceCandidatePair: IceCandidatePair,
