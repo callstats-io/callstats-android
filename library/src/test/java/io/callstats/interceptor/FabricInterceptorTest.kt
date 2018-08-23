@@ -1,6 +1,9 @@
 package io.callstats.interceptor
 
-import io.callstats.WebRTCEvent.OnIceConnectionChange
+import io.callstats.OnHold
+import io.callstats.OnIceConnectionChange
+import io.callstats.OnResume
+import io.callstats.event.fabric.FabricActionEvent
 import io.callstats.event.fabric.FabricSetupEvent
 import io.callstats.event.fabric.FabricStateChangeEvent
 import io.callstats.event.fabric.FabricTransportChangeEvent
@@ -74,6 +77,18 @@ class FabricInterceptorTest {
     val events = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CHECKING), "local1", "remote1", "con1", stats)
     assertEquals(1, events.size)
     assertTrue(events.first() is FabricStateChangeEvent)
+  }
+
+  @Test
+  fun fabricActions() {
+    connected()
+    val stats = mapOf<String, RTCStats>()
+    val events = interceptor.process(connection, OnHold(), "local1", "remote1", "con1", stats)
+    assertEquals(1, events.size)
+    assertTrue(events.first() is FabricActionEvent)
+    val events2 = interceptor.process(connection, OnResume(), "local1", "remote1", "con1", stats)
+    assertEquals(1, events2.size)
+    assertTrue(events2.first() is FabricActionEvent)
   }
 
   // utils

@@ -20,6 +20,9 @@ data class Ssrc(
     val localStartTime: Double) {
 
   companion object {
+    const val REPORT_LOCAL = "local"
+    const val REPORT_REMOTE = "remote"
+
     fun fromStats(stats: RTCStats, connection: PeerConnection, localId: String, remoteId: String): Ssrc? {
       val isRemote = stats.members["isRemote"] as? Boolean ?: return null
       val sdp = if (!isRemote) connection.localDescription else connection.remoteDescription
@@ -35,7 +38,7 @@ data class Ssrc(
           id,
           cname,
           streamType,
-          if (!isRemote) "local" else "remote",
+          if (!isRemote) REPORT_LOCAL else REPORT_REMOTE,
           mediaType,
           if (!isRemote) localId else remoteId,
           msid,

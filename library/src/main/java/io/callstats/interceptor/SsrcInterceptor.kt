@@ -1,8 +1,8 @@
 package io.callstats.interceptor
 
-import io.callstats.WebRTCEvent
-import io.callstats.WebRTCEvent.OnAddStream
-import io.callstats.WebRTCEvent.OnIceConnectionChange
+import io.callstats.OnAddStream
+import io.callstats.OnIceConnectionChange
+import io.callstats.PeerEvent
 import io.callstats.event.Event
 import io.callstats.event.special.SsrcEvent
 import io.callstats.utils.ssrcs
@@ -18,20 +18,20 @@ internal class SsrcInterceptor : Interceptor {
 
   override fun process(
       connection: PeerConnection,
-      webRTCEvent: WebRTCEvent,
+      event: PeerEvent,
       localID: String,
       remoteID: String,
       connectionID: String,
       stats: Map<String, RTCStats>): Array<Event> {
 
     // only continue if the event is ice and stream added
-    if (webRTCEvent !is OnIceConnectionChange && webRTCEvent !is OnAddStream) return emptyArray()
+    if (event !is OnIceConnectionChange && event !is OnAddStream) return emptyArray()
 
     // if event is ice connection change but already connected, do not send
-    if (webRTCEvent is OnIceConnectionChange && connected) return emptyArray()
+    if (event is OnIceConnectionChange && connected) return emptyArray()
 
     // if event is ice connection change but not connect yet, set connected
-    if (webRTCEvent is OnIceConnectionChange && webRTCEvent.state == PeerConnection.IceConnectionState.CONNECTED) {
+    if (event is OnIceConnectionChange && event.state == PeerConnection.IceConnectionState.CONNECTED) {
       connected = true
     }
 

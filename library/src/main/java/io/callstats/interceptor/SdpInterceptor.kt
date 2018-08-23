@@ -1,7 +1,7 @@
 package io.callstats.interceptor
 
-import io.callstats.WebRTCEvent
-import io.callstats.WebRTCEvent.OnIceConnectionChange
+import io.callstats.OnIceConnectionChange
+import io.callstats.PeerEvent
 import io.callstats.event.Event
 import io.callstats.event.special.SdpEvent
 import org.webrtc.PeerConnection
@@ -17,15 +17,15 @@ internal class SdpInterceptor : Interceptor {
 
   override fun process(
       connection: PeerConnection,
-      webRTCEvent: WebRTCEvent,
+      event: PeerEvent,
       localID: String,
       remoteID: String,
       connectionID: String,
       stats: Map<String, RTCStats>): Array<Event>
   {
     // send sdp after connected only once
-    if (webRTCEvent is OnIceConnectionChange
-        && webRTCEvent.state == IceConnectionState.CONNECTED
+    if (event is OnIceConnectionChange
+        && event.state == IceConnectionState.CONNECTED
         && !connected) {
       connected = true
 

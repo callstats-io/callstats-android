@@ -1,8 +1,8 @@
 package io.callstats.interceptor
 
 import com.nhaarman.mockito_kotlin.whenever
-import io.callstats.WebRTCEvent.OnAddStream
-import io.callstats.WebRTCEvent.OnIceConnectionChange
+import io.callstats.OnAddStream
+import io.callstats.OnIceConnectionChange
 import io.callstats.event.special.SsrcEvent
 import org.junit.Assert.assertTrue
 import org.junit.Before

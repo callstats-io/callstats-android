@@ -1,10 +1,13 @@
 package io.callstats.interceptor
 
-import io.callstats.WebRTCEvent
-import io.callstats.WebRTCEvent.OnIceConnectionChange
-import io.callstats.WebRTCEvent.OnIceGatheringChange
-import io.callstats.WebRTCEvent.OnSignalingChange
+import io.callstats.OnHold
+import io.callstats.OnIceConnectionChange
+import io.callstats.OnIceGatheringChange
+import io.callstats.OnResume
+import io.callstats.OnSignalingChange
+import io.callstats.PeerEvent
 import io.callstats.event.Event
+import io.callstats.event.fabric.FabricActionEvent
 import io.callstats.event.fabric.FabricDroppedEvent
 import io.callstats.event.fabric.FabricSetupEvent
 import io.callstats.event.fabric.FabricStateChangeEvent
@@ -42,16 +45,18 @@ internal class FabricInterceptor : Interceptor {
 
   override fun process(
       connection: PeerConnection,
-      webRTCEvent: WebRTCEvent,
+      event: PeerEvent,
       localID: String,
       remoteID: String,
       connectionID: String,
       stats: Map<String, RTCStats>): Array<Event>
   {
     // filter event
-    if (webRTCEvent !is OnIceConnectionChange
-        && webRTCEvent !is OnIceGatheringChange
-        && webRTCEvent !is OnSignalingChange)
+    if (event !is OnIceConnectionChange
+        && event !is OnIceGatheringChange
+        && event !is OnSignalingChange
+        && event !is OnHold
+        && event !is OnResume)
     {
       return emptyArray()
     }
@@ -61,28 +66,28 @@ internal class FabricInterceptor : Interceptor {
 
     // [Fabric state change] if connection was setup, send fabric change
     if (connected
-        && ((webRTCEvent is OnIceConnectionChange && webRTCEvent.state != iceConnectionState)
-            || (webRTCEvent is OnIceGatheringChange && webRTCEvent.state != iceGatheringState)
-            || (webRTCEvent is OnSignalingChange && webRTCEvent.state != signalingState)))
+        && ((event is OnIceConnectionChange && event.state != iceConnectionState)
+            || (event is OnIceGatheringChange && event.state != iceGatheringState)
+            || (event is OnSignalingChange && event.state != signalingState)))
     {
       val prevState: String
       val newState: String
       val changedState: String
 
-      when (webRTCEvent) {
+      when (event) {
         is OnIceConnectionChange -> {
           prevState = iceConnectionState.name
-          newState = webRTCEvent.state.name
+          newState = event.state.name
           changedState = "iceConnectionState"
         }
         is OnIceGatheringChange -> {
           prevState = iceGatheringState.name
-          newState = webRTCEvent.state.name
+          newState = event.state.name
           changedState = "iceGatheringState"
         }
         is OnSignalingChange -> {
           prevState = signalingState.name
-          newState = webRTCEvent.state.name
+          newState = event.state.name
           changedState = "signalingState"
         }
         else -> throw IllegalArgumentException()
@@ -98,8 +103,8 @@ internal class FabricInterceptor : Interceptor {
 
     // [Fabric dropped] if connection was setup and ice state change from disconnect or complete to failed, send fabric drop
     if (connected
-        && webRTCEvent is OnIceConnectionChange
-        && webRTCEvent.state == FAILED
+        && event is OnIceConnectionChange
+        && event.state == FAILED
         && (iceConnectionState == COMPLETED || iceConnectionState == DISCONNECTED))
     {
       val startTime = timestamp[iceConnectionState]
@@ -117,15 +122,15 @@ internal class FabricInterceptor : Interceptor {
 
     // [Fabric terminated] if connection was setup and ice state change to closed, send fabric terminated
     if (connected
-        && webRTCEvent is OnIceConnectionChange
-        && webRTCEvent.state == CLOSED
+        && event is OnIceConnectionChange
+        && event.state == CLOSED
         && iceConnectionState != CLOSED)
     {
       events += FabricTerminatedEvent(remoteID, connectionID)
     }
 
     // when ICE state = CONNECTED
-    if (webRTCEvent is OnIceConnectionChange && webRTCEvent.state == CONNECTED)
+    if (event is OnIceConnectionChange && event.state == CONNECTED)
     {
       // get new pairs
       val selectedPairId = stats.selectedCandidatePairId()
@@ -158,7 +163,7 @@ internal class FabricInterceptor : Interceptor {
               connectionID,
               newPair,
               prevPair,
-              webRTCEvent.state.name.toLowerCase(),
+              event.state.name.toLowerCase(),
               iceConnectionState.name.toLowerCase(),
               lastConnectDelay).apply {
             localIceCandidates.addAll(locals)
@@ -171,14 +176,22 @@ internal class FabricInterceptor : Interceptor {
       iceCandidatePair = newPair
     }
 
+    // [Fabric action] hold and resume event from app
+    if (connected) {
+      when (event) {
+        is OnHold -> events += FabricActionEvent(remoteID, connectionID, FabricActionEvent.EVENT_HOLD)
+        is OnResume -> events += FabricActionEvent(remoteID, connectionID, FabricActionEvent.EVENT_RESUME)
+      }
+    }
+
     // finally, update the states
-    when (webRTCEvent) {
+    when (event) {
       is OnIceConnectionChange -> {
-        iceConnectionState = webRTCEvent.state
+        iceConnectionState = event.state
         timestamp[iceConnectionState] = newTimestamp
       }
-      is OnIceGatheringChange -> iceGatheringState = webRTCEvent.state
-      is OnSignalingChange -> signalingState = webRTCEvent.state
+      is OnIceGatheringChange -> iceGatheringState = event.state
+      is OnSignalingChange -> signalingState = event.state
     }
 
     return events

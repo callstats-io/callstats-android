@@ -102,27 +102,18 @@ class Callstats(
    * Report normal WebRTC event from observer
    * @param remoteUserID recipient's userID
    */
-  fun reportEvent(remoteUserID: String, type: WebRTCEvent) {
+  fun reportEvent(remoteUserID: String, type: PeerEvent) {
     eventManagers[remoteUserID]?.process(type)
   }
 
   /**
    * Report application event
    */
-  fun reportEvent(type: ApplicationEvent) {
-    if (type is ApplicationPeerEvent) {
-      // if empty remoteListID, send to all available peers
-      if (type.remoteIDList.isEmpty()) {
-        eventManagers.keys.forEach { eventManagers[it]?.process(type) }
-      } else {
-        type.remoteIDList.forEach { eventManagers[it]?.process(type) }
-      }
-    } else {
-      when (type) {
-        is OnDominantSpeaker -> sender.send(DominantSpeakerEvent())
-        is OnDeviceConnected -> sender.send(DeviceEvent(DeviceEvent.EVENT_CONNECTED, type.devices))
-        is OnDeviceActive -> sender.send(DeviceEvent(DeviceEvent.EVENT_ACTIVE, type.devices))
-      }
+  fun reportEvent(type: AppEvent) {
+    when (type) {
+      is OnDominantSpeaker -> sender.send(DominantSpeakerEvent())
+      is OnDeviceConnected -> sender.send(DeviceEvent(DeviceEvent.EVENT_CONNECTED, type.devices))
+      is OnDeviceActive -> sender.send(DeviceEvent(DeviceEvent.EVENT_ACTIVE, type.devices))
     }
   }
 

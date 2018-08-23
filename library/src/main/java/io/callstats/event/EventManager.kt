@@ -1,25 +1,13 @@
 package io.callstats.event
 
-import io.callstats.ApplicationEvent
 import io.callstats.CallstatsConfig
-import io.callstats.WebRTCEvent
-import io.callstats.WebRTCEvent.OnIceConnectionChange
-import io.callstats.WebRTCEvent.OnStats
-import io.callstats.OnAudio
-import io.callstats.OnHold
-import io.callstats.OnResume
-import io.callstats.OnScreenShare
-import io.callstats.OnVideo
-import io.callstats.event.fabric.FabricActionEvent
+import io.callstats.OnIceConnectionChange
+import io.callstats.OnStats
+import io.callstats.PeerEvent
 import io.callstats.event.fabric.FabricSetupEvent
 import io.callstats.event.fabric.FabricTerminatedEvent
-import io.callstats.event.media.MediaActionEvent
 import io.callstats.interceptor.Interceptor
-import io.callstats.utils.candidatePairs
-import io.callstats.utils.localCandidates
-import io.callstats.utils.md5
-import io.callstats.utils.remoteCandidates
-import io.callstats.utils.selectedCandidatePairId
+import io.callstats.utils.*
 import org.webrtc.PeerConnection
 import org.webrtc.RTCStatsReport
 import java.util.Timer
@@ -31,14 +19,9 @@ import kotlin.concurrent.timerTask
 internal interface EventManager {
 
   /**
-   * Process WebRTC events
+   * Process peer events
    */
-  fun process(event: WebRTCEvent)
-
-  /**
-   * Process Application events
-   */
-  fun process(event: ApplicationEvent)
+  fun process(event: PeerEvent)
 }
 
 /**
@@ -56,7 +39,7 @@ internal class EventManagerImpl(
   internal var connectionID = ""
   private var statsTimer: Timer? = null
 
-  override fun process(event: WebRTCEvent) {
+  override fun process(event: PeerEvent) {
     connection.getStats { report ->
       // every time ice connected, update connection ID
       if (event is OnIceConnectionChange && event.state == PeerConnection.IceConnectionState.CONNECTED) {
@@ -79,24 +62,6 @@ internal class EventManagerImpl(
         events.firstOrNull { it is FabricTerminatedEvent } ?.also { stopStatsTimer() }
       }
     }
-  }
-
-  override fun process(event: ApplicationEvent) {
-    connectionID.takeIf { it.isNotEmpty() }
-        ?.let { connId ->
-          when (event) {
-            is OnHold -> sender.send(FabricActionEvent(remoteID, connId, FabricActionEvent.EVENT_HOLD))
-            is OnResume -> sender.send(FabricActionEvent(remoteID, connId, FabricActionEvent.EVENT_RESUME))
-            is io.callstats.MediaActionEvent -> {
-              val eventType = when (event) {
-                is OnAudio -> if (event.mute) MediaActionEvent.EVENT_MUTE else MediaActionEvent.EVENT_UNMUTE
-                is OnVideo -> if (event.enable) MediaActionEvent.EVENT_VIDEO_RESUME else MediaActionEvent.EVENT_VIDEO_PAUSE
-                is OnScreenShare -> if (event.enable) MediaActionEvent.EVENT_SCREENSHARE_START else MediaActionEvent.EVENT_SCREENSHARE_STOP
-              }
-              sender.send(MediaActionEvent(remoteID, connId, eventType, event.mediaDeviceID))
-            }
-          }
-        }
   }
 
   private fun startStatsTimer() {

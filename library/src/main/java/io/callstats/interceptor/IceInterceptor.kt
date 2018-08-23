@@ -1,7 +1,7 @@
 package io.callstats.interceptor
 
-import io.callstats.WebRTCEvent
-import io.callstats.WebRTCEvent.OnIceConnectionChange
+import io.callstats.OnIceConnectionChange
+import io.callstats.PeerEvent
 import io.callstats.event.Event
 import io.callstats.event.ice.IceAbortedEvent
 import io.callstats.event.ice.IceConnectionDisruptEndEvent
@@ -37,19 +37,19 @@ internal class IceInterceptor : Interceptor {
 
   override fun process(
       connection: PeerConnection,
-      webRTCEvent: WebRTCEvent,
+      event: PeerEvent,
       localID: String,
       remoteID: String,
       connectionID: String,
       stats: Map<String, RTCStats>): Array<Event>
   {
     // filter event
-    if (webRTCEvent !is OnIceConnectionChange) {
+    if (event !is OnIceConnectionChange) {
       return emptyArray()
     }
 
     var events = emptyArray<Event>()
-    val newState = webRTCEvent.state
+    val newState = event.state
     val newPair = stats.candidatePairs().firstOrNull()
     val newTimestamp = System.currentTimeMillis()
 
