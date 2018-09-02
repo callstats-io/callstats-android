@@ -9,25 +9,10 @@ The project contains demo application which connect to https://demo.callstats.io
 
 - [x] Authentication
 - [x] User Action Events
-  - [x] User joined
-  - [x] User alive
-  - [x] User left
-  - [x] User detail
 - [x] Fabric Events
-  - [x] Setup
-  - [x] Setup failed
-  - [x] Terminated
-  - [x] State change
-  - [x] Transport change
-  - [x] Dropped
-  - [x] Action
 - [x] Stats submission
-  - [x] Conference stats
-  - [x] System status stats
 - [x] ICE Events
 - [x] Media Events
-  - [x] Action
-  - [x] Playback
 - [x] Device Events
 - [x] Special Events
   - [x] Application Log
@@ -36,3 +21,12 @@ The project contains demo application which connect to https://demo.callstats.io
   - [x] SSRC
   - [x] SDP
 - [ ] Callstats Internal Events
+  - [x] csioAvgRtt
+  - [x] csioAvgJitter
+  - [x] csioAvgBRKbps
+  - [x] csioIntMs
+  - [x] csioTimeElapseMs
+  - [x] csioIntBRKbps
+  - [x] csioIntFL
+  - [x] csioIntPktLoss
+  - [ ] ...
