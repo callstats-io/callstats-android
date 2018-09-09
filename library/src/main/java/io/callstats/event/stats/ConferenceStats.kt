@@ -1,6 +1,7 @@
 package io.callstats.event.stats
 
 import io.callstats.event.SessionEvent
+import io.callstats.event.info.WifiStats
 
 /**
  * All the conference stats inlcuding tracks, candidatePairs,trasnports, msts, dataChannels, codes and timestamps can be submitted using this event.
@@ -15,4 +16,6 @@ internal class ConferenceStats(
 {
   override fun url() = "https://stats.callstats.io"
   override fun path() = "stats"
+
+  var wifiStats: WifiStats? = null
 }

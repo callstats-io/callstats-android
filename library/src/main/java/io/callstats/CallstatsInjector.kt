@@ -1,5 +1,6 @@
 package io.callstats
 
+import android.content.Context
 import io.callstats.event.EventManager
 import io.callstats.event.EventManagerImpl
 import io.callstats.event.EventSender
@@ -12,6 +13,8 @@ import io.callstats.interceptor.SsrcInterceptor
 import io.callstats.interceptor.StatsInterceptor
 import io.callstats.utils.SystemStatus
 import io.callstats.utils.SystemStatusProvider
+import io.callstats.utils.WifiStatus
+import io.callstats.utils.WifiStatusProvider
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.webrtc.PeerConnection
@@ -27,13 +30,12 @@ internal open class CallstatsInjector {
   open fun executor(): ExecutorService = Executors.newSingleThreadExecutor()
 
   open fun eventSender(
-      client: OkHttpClient,
-      executor: ExecutorService,
       appID: String,
       localID: String,
-      deviceID: String): EventSender = EventSenderImpl(client, executor, appID, localID, deviceID)
+      deviceID: String): EventSender = EventSenderImpl(okhttpClient(), executor(), appID, localID, deviceID)
 
   open fun eventManager(
+      context: Context,
       sender: EventSender,
       localID: String,
       remoteID: String,
@@ -42,7 +44,7 @@ internal open class CallstatsInjector {
   {
     val interceptors = arrayOf(
         FabricInterceptor(),
-        StatsInterceptor(),
+        StatsInterceptor(wifiStatus(context)),
         IceInterceptor(),
         SsrcInterceptor(),
         SdpInterceptor(),
@@ -51,4 +53,6 @@ internal open class CallstatsInjector {
   }
 
   open fun systemStatus(): SystemStatusProvider = SystemStatus()
+
+  open fun wifiStatus(context: Context): WifiStatusProvider = WifiStatus(context)
 }

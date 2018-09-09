@@ -1,9 +1,11 @@
 package io.callstats.interceptor
 
+import com.nhaarman.mockito_kotlin.whenever
 import io.callstats.OnIceConnectionChange
 import io.callstats.OnStats
 import io.callstats.event.Event
 import io.callstats.event.stats.ConferenceStats
+import io.callstats.utils.WifiStatusProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -16,6 +18,7 @@ import org.webrtc.RTCStats
 class StatsInterceptorTest {
 
   @Mock private lateinit var connection: PeerConnection
+  @Mock private lateinit var wifiStatusProvider: WifiStatusProvider
 
   private lateinit var interceptor: StatsInterceptor
 
@@ -35,7 +38,7 @@ class StatsInterceptorTest {
   @Before
   fun setup() {
     MockitoAnnotations.initMocks(this)
-    interceptor = StatsInterceptor()
+    interceptor = StatsInterceptor(wifiStatusProvider)
 
     // connected
     interceptor.process(
@@ -52,6 +55,16 @@ class StatsInterceptorTest {
     val events = process(emptyMap())
     assertEquals(1, events.size)
     assertTrue(events.first() is ConferenceStats)
+  }
+
+  @Test
+  fun sendWifiStats() {
+    whenever(wifiStatusProvider.wifiRssi()).thenReturn(-1)
+    whenever(wifiStatusProvider.wifiSignal()).thenReturn(20)
+    val events = process(emptyMap())
+    val event = events.first() as ConferenceStats
+    assertEquals(-1, event.wifiStats?.rssi)
+    assertEquals(20, event.wifiStats?.signal)
   }
 
   @Test

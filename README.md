@@ -15,12 +15,7 @@ The project contains demo application which connect to https://demo.callstats.io
 - [x] Media Events
 - [x] Device Events
 - [x] Special Events
-  - [x] Application Log
-  - [x] Feedback
-  - [x] Dominant speaker
-  - [x] SSRC
-  - [x] SDP
-- [ ] Callstats Internal Events
+- [x] Callstats Internal Events
   - [x] csioAvgRtt
   - [x] csioAvgJitter
   - [x] csioAvgBRKbps
@@ -29,4 +24,3 @@ The project contains demo application which connect to https://demo.callstats.io
   - [x] csioIntBRKbps
   - [x] csioIntFL
   - [x] csioIntPktLoss
-  - [ ] ...

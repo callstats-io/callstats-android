@@ -44,9 +44,7 @@ class Callstats(
     internal var dependency = CallstatsInjector()
   }
 
-  private val okHttpClient = dependency.okhttpClient()
-  private val executor = dependency.executor()
-  private val sender = dependency.eventSender(okHttpClient, executor, appID, localID, deviceID)
+  private val sender = dependency.eventSender(appID, localID, deviceID)
   private val systemStatus = dependency.systemStatus()
 
   // timers
@@ -91,6 +89,7 @@ class Callstats(
   fun addNewFabric(connection: PeerConnection, remoteUserID: String) {
     if (eventManagers.containsKey(remoteUserID)) return
     eventManagers[remoteUserID] = dependency.eventManager(
+        context,
         sender,
         localID,
         remoteUserID,

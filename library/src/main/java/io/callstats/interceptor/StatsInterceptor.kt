@@ -4,14 +4,16 @@ import io.callstats.OnIceConnectionChange
 import io.callstats.OnStats
 import io.callstats.PeerEvent
 import io.callstats.event.Event
+import io.callstats.event.info.WifiStats
 import io.callstats.event.stats.ConferenceStats
+import io.callstats.utils.WifiStatusProvider
 import org.webrtc.PeerConnection
 import org.webrtc.RTCStats
 
 /**
  * Interceptor to handle stats submission events
  */
-internal class StatsInterceptor : Interceptor {
+internal class StatsInterceptor(private val wifiStatusProvider: WifiStatusProvider) : Interceptor {
 
   private var startTimestamp = 0L
   private var lastSentTimestamp = 0L
@@ -69,9 +71,21 @@ internal class StatsInterceptor : Interceptor {
       }
     }
 
-    // update states
+    // update states & create stats event
     lastSentTimestamp = currentTimestamp
-    return arrayOf(ConferenceStats(remoteID, connectionID, statsList.toTypedArray()))
+
+    val confStats = ConferenceStats(remoteID, connectionID, statsList.toTypedArray())
+    confStats.wifiStats = getWifiStats(currentTimestamp)
+    return arrayOf(confStats)
+  }
+
+  private fun getWifiStats(currentTimestamp: Long): WifiStats? {
+    val wifiSignal = wifiStatusProvider.wifiSignal()
+    val wifiRssi = wifiStatusProvider.wifiRssi()
+    if (wifiSignal != null && wifiRssi != null) {
+      return WifiStats(wifiSignal, wifiRssi, currentTimestamp)
+    }
+    return null
   }
 
   private fun sendCsioAvgRtt(stat: MutableMap<String, Any>, cache: CsioCache) {
