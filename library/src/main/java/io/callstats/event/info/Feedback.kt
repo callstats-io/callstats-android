@@ -3,7 +3,7 @@ package io.callstats.event.info
 /**
  * Feedback info
  */
-data class Feedback(val overallRating: Int) {
+internal data class Feedback(val overallRating: Int) {
 
   /**
    * It is provided by the developer.

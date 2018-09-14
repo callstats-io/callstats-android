@@ -20,17 +20,17 @@ sealed class AppEvent : Event()
 data class OnIceConnectionChange(val state: PeerConnection.IceConnectionState) : PeerEvent()
 data class OnIceGatheringChange(val state: PeerConnection.IceGatheringState) : PeerEvent()
 data class OnSignalingChange(val state: PeerConnection.SignalingState) : PeerEvent()
-class OnAddStream : PeerEvent()
-internal class OnStats : PeerEvent()
+object OnAddStream : PeerEvent()
+internal object OnStats : PeerEvent()
 // endregion
 
 // region Fabric events
-class OnHold : PeerEvent()
-class OnResume : PeerEvent()
+object OnHold : PeerEvent()
+object OnResume : PeerEvent()
 // endregion
 
 // region Device events
-class OnDominantSpeaker : AppEvent()
+object OnDominantSpeaker : AppEvent()
 class OnDeviceConnected(val devices: Array<MediaDevice>) : AppEvent()
 class OnDeviceActive(val devices: Array<MediaDevice>) : AppEvent()
 // endregion

@@ -319,7 +319,7 @@ class CsioRTC(
         peerVideoTracks[peerId] = it
         callback.onCsioRTCPeerVideoAvailable()
       }
-      callstats.reportEvent(peerId, OnAddStream())
+      callstats.reportEvent(peerId, OnAddStream)
     }
 
     override fun onDataChannel(channel: DataChannel) {

@@ -2,7 +2,7 @@ package io.callstats.utils
 
 import java.security.MessageDigest
 
-fun md5(input: String): String {
+internal fun md5(input: String): String {
   val digest = MessageDigest.getInstance("MD5")
   digest.update(input.toByteArray())
   val messageDigest = digest.digest()

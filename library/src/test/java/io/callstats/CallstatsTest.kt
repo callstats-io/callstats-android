@@ -143,7 +143,7 @@ class CallstatsTest {
   @Test
   fun reportAppEventSendDirectly() {
     callstats.addNewFabric(connection, "remote1")
-    callstats.reportEvent(OnDominantSpeaker())
+    callstats.reportEvent(OnDominantSpeaker)
     verify(sender).send(any<DominantSpeakerEvent>())
   }
 

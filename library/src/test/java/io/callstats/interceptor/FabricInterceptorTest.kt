@@ -83,10 +83,10 @@ class FabricInterceptorTest {
   fun fabricActions() {
     connected()
     val stats = mapOf<String, RTCStats>()
-    val events = interceptor.process(connection, OnHold(), "local1", "remote1", "con1", stats)
+    val events = interceptor.process(connection, OnHold, "local1", "remote1", "con1", stats)
     assertEquals(1, events.size)
     assertTrue(events.first() is FabricActionEvent)
-    val events2 = interceptor.process(connection, OnResume(), "local1", "remote1", "con1", stats)
+    val events2 = interceptor.process(connection, OnResume, "local1", "remote1", "con1", stats)
     assertEquals(1, events2.size)
     assertTrue(events2.first() is FabricActionEvent)
   }

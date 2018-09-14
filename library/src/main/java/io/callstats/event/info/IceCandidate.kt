@@ -5,7 +5,7 @@ import org.webrtc.RTCStats
 /**
  * ICE candidate info
  */
-data class IceCandidate(
+internal data class IceCandidate(
     val id: String,
     val type: String,
     val ip: String,

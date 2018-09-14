@@ -139,7 +139,7 @@ class StatsInterceptorTest {
     Thread.sleep(10) // add some time between event processing
     return interceptor.process(
         connection,
-        OnStats(),
+        OnStats,
         "local1",
         "remote1",
         "connection1",

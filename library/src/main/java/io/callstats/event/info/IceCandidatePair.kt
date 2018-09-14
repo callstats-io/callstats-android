@@ -11,7 +11,7 @@ import org.webrtc.RTCStats
  * @param state "frozen", "waiting", "inprogress", "failed", "succeeded", "cancelled"
  * @param nominated nominated
  */
-data class IceCandidatePair(
+internal data class IceCandidatePair(
     val id: String,
     val localCandidateId: String,
     val remoteCandidateId: String,

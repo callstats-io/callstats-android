@@ -7,7 +7,7 @@ import org.webrtc.RTCStats
 /**
  * SSRC info
  */
-data class Ssrc(
+internal data class Ssrc(
     val ssrc: String,
     val cname: String,
     val streamType: String,

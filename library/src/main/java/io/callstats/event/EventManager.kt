@@ -69,7 +69,7 @@ internal class EventManagerImpl(
     val period = config.statsSubmissionPeriod * 1000L
     statsTimer = Timer(true)
     statsTimer?.schedule(
-        timerTask { process(OnStats()) },
+        timerTask { process(OnStats) },
         period,
         period)
   }

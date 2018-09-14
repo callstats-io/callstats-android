@@ -5,7 +5,7 @@ import org.webrtc.SessionDescription
 /**
  * Extract SSRC values from ID in session description
  */
-fun SessionDescription.ssrcValues(id: String): Map<String, String>? {
+internal fun SessionDescription.ssrcValues(id: String): Map<String, String>? {
   var values: HashMap<String, String>? = null
   val lines = description.split("\\r?\\n".toRegex())
   val prefix = "a=ssrc:$id "
