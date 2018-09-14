@@ -9,5 +9,9 @@
   <string name="main_footer">Brought to you by Callstats.io</string>
   <string name="call_my_name">Your name : %s</string>
   <string name="call_no_participant">No. of participant : %d</string>
+  <string name="call_disconnect">Disconnected</string>
   <string name="chat_send_message_hint">Send a message</string>
+  <string name="feedback_title">Meeting Feedback</string>
+  <string name="feedback_cancel">Cancel</string>
+  <string name="feedback_submit">Submit</string>
 </resources>

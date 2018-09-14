@@ -1,14 +1,19 @@
 package io.callstats.demo
 
 import android.os.Bundle
+import android.provider.Settings
 import android.support.v4.view.GravityCompat
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.view.ContextThemeWrapper
+import android.view.LayoutInflater
 import android.view.WindowManager
 import android.widget.ArrayAdapter
+import android.widget.RatingBar
+import android.widget.Toast
 import io.callstats.demo.csiortc.CsioRTC
 import kotlinx.android.synthetic.main.activity_call.*
 import kotlinx.android.synthetic.main.drawer_chat.*
-import org.webrtc.VideoRenderer
 
 class CallActivity : AppCompatActivity(), CsioRTC.Callback {
 
@@ -21,7 +26,6 @@ class CallActivity : AppCompatActivity(), CsioRTC.Callback {
 
   // current renderer
   private var showingVideoFromPeer: String? = null
-  private var currentVideoRenderer: VideoRenderer? = null
 
   // chat messages
   private val messageList = mutableListOf<String>()
@@ -36,9 +40,14 @@ class CallActivity : AppCompatActivity(), CsioRTC.Callback {
     val room = intent.getStringExtra(EXTRA_ROOM) ?: throw IllegalArgumentException("need room")
 
     // setup rtc
-    csioRTC = CsioRTC(applicationContext, room, this, name)
-    local_video_view.init(csioRTC.localEglBase.eglBaseContext, null)
-    remote_video_view.init(csioRTC.remoteEglBase.eglBaseContext, null)
+    csioRTC = CsioRTC(
+        applicationContext,
+        room,
+        Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID),
+        this,
+        name)
+    local_video_view.init(csioRTC.sharedEglBase.eglBaseContext, null)
+    remote_video_view.init(csioRTC.sharedEglBase.eglBaseContext, null)
 
     // self video should be mirrored
     local_video_view.setMirror(true)
@@ -47,7 +56,7 @@ class CallActivity : AppCompatActivity(), CsioRTC.Callback {
     count_text.text = getString(R.string.call_no_participant, 0)
 
     chat_button.setOnClickListener { drawer_layout.openDrawer(GravityCompat.END) }
-    hang_button.setOnClickListener { finish() }
+    hang_button.setOnClickListener { showFeedbackAndHang() }
 
     mic_button.setOnClickListener {
       val selected = !it.isSelected
@@ -63,6 +72,7 @@ class CallActivity : AppCompatActivity(), CsioRTC.Callback {
 
     left_button.setOnClickListener {
       showingVideoFromPeer?.let {
+        if (peerIds.isEmpty()) return@setOnClickListener
         val found = peerIds.indexOf(it)
         val index = if (found - 1 < 0) peerIds.size - 1 else found - 1
         showVideoFromPeerId(peerIds[index])
@@ -71,6 +81,7 @@ class CallActivity : AppCompatActivity(), CsioRTC.Callback {
 
     right_button.setOnClickListener {
       showingVideoFromPeer?.let {
+        if (peerIds.isEmpty()) return@setOnClickListener
         val found = peerIds.indexOf(it)
         val index = if (found + 1 == peerIds.size) 0 else found + 1
         showVideoFromPeerId(peerIds[index])
@@ -101,7 +112,6 @@ class CallActivity : AppCompatActivity(), CsioRTC.Callback {
     csioRTC.leave()
     local_video_view.release()
     remote_video_view.release()
-    currentVideoRenderer = null
 
     finish()
   }
@@ -110,16 +120,32 @@ class CallActivity : AppCompatActivity(), CsioRTC.Callback {
     if (peerId == showingVideoFromPeer) return
     // release previous renderer
     val peer = showingVideoFromPeer
-    val renderer = currentVideoRenderer
-    if (peer != null && renderer != null) {
-      csioRTC.removeRemoteVideoRenderer(peer, renderer)
+    if (peer != null) {
+      csioRTC.removeRemoteVideoRenderer(peer, remote_video_view)
     }
 
     // add new renderer
-    val newRenderer = VideoRenderer(remote_video_view)
     showingVideoFromPeer = peerId
-    currentVideoRenderer = newRenderer
-    csioRTC.addRemoteVideoRenderer(peerId, newRenderer)
+    csioRTC.addRemoteVideoRenderer(peerId, remote_video_view)
+  }
+
+  private fun showFeedbackAndHang() {
+    val view = LayoutInflater.from(this).inflate(R.layout.dialog_feedback, null)
+    val ratingBar = view.findViewById<RatingBar>(R.id.rating)
+    ratingBar.setOnRatingBarChangeListener { bar, rating, _ ->
+      if(rating < 1f) bar.rating = 1f
+    }
+    AlertDialog.Builder(ContextThemeWrapper(this, R.style.AppTheme_Dialog))
+        .setView(view)
+        .setTitle(R.string.feedback_title)
+        .setPositiveButton(R.string.feedback_submit, { dialogInterface, _ ->
+          val rating = ratingBar.rating
+          csioRTC.sendFeedback(rating.toInt())
+          dialogInterface.dismiss()
+        })
+        .setNegativeButton(R.string.feedback_cancel, null)
+        .setOnDismissListener { finish() }
+        .show()
   }
 
   // CsioRTC callback
@@ -134,15 +160,15 @@ class CallActivity : AppCompatActivity(), CsioRTC.Callback {
       count_text.text = getString(R.string.call_no_participant, peerIds.size)
       // save peer ids to navigate
       this.peerIds = peerIds
+      // clear last frame
+      remote_video_view.clearImage()
     }
   }
 
   override fun onCsioRTCPeerVideoAvailable() {
     runOnUiThread {
       val peerIds = csioRTC.getAvailableVideoPeerIds()
-      if (showingVideoFromPeer == null && peerIds.isNotEmpty()) {
-        showVideoFromPeerId(peerIds.first())
-      }
+      showVideoFromPeerId(peerIds.last())
     }
   }
 
@@ -150,6 +176,13 @@ class CallActivity : AppCompatActivity(), CsioRTC.Callback {
     runOnUiThread {
       messageList.add("$peerId : $message")
       adapter.notifyDataSetChanged()
+    }
+  }
+
+  override fun onCsioRTCDisconnect() {
+    runOnUiThread {
+      Toast.makeText(this, R.string.call_disconnect, Toast.LENGTH_SHORT).show()
+      finish()
     }
   }
 }

@@ -14,6 +14,7 @@ class CsioSignaling(
     private const val URL = "https://demo.callstats.io"
     private const val TAG = "signaling"
     private const val EVENT_CONNECT = "connect"
+    private const val EVENT_DISCONNECT = "disconnect"
     private const val EVENT_CONNECT_ERROR = "connect_error"
     private const val EVENT_JOIN = "join"
     private const val EVENT_LEAVE = "leave"
@@ -26,6 +27,7 @@ class CsioSignaling(
   interface Callback {
     fun onConnect()
     fun onConnectError()
+    fun onDisconnect()
     fun onPeerJoin(peerId: String)
     fun onPeerLeave(peerId: String)
     fun onMessage(fromId: String, message: String)
@@ -64,6 +66,11 @@ class CsioSignaling(
       Log.i(TAG, "receive message from $user : $msg")
       callback.onMessage(user, msg)
     }
+
+    socket.on(EVENT_DISCONNECT) {
+      Log.i(TAG, "disconnected")
+      callback.onDisconnect()
+    }
   }
 
   /**
@@ -77,6 +84,7 @@ class CsioSignaling(
    * Leave the current room
    */
   fun stop() {
+    callback.onDisconnect()
     socket.emit(EVENT_LEAVE)
     socket.disconnect()
     socket.off()

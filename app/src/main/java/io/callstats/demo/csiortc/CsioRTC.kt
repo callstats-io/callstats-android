@@ -1,14 +1,42 @@
 package io.callstats.demo.csiortc
 
 import android.content.Context
+import android.util.Base64
 import android.util.Log
+import io.callstats.Callstats
+import io.callstats.OnAddStream
+import io.callstats.OnIceConnectionChange
+import io.callstats.OnIceGatheringChange
+import io.callstats.OnSignalingChange
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.SignatureAlgorithm
 import org.json.JSONObject
-import org.webrtc.*
+import org.spongycastle.jce.provider.BouncyCastleProvider
+import org.webrtc.AudioSource
+import org.webrtc.AudioTrack
+import org.webrtc.DataChannel
+import org.webrtc.EglBase
+import org.webrtc.IceCandidate
+import org.webrtc.MediaConstraints
+import org.webrtc.MediaStream
+import org.webrtc.PeerConnection
+import org.webrtc.PeerConnectionFactory
+import org.webrtc.RtpReceiver
+import org.webrtc.SessionDescription
+import org.webrtc.SurfaceTextureHelper
+import org.webrtc.SurfaceViewRenderer
+import org.webrtc.VideoCapturer
+import org.webrtc.VideoSource
+import org.webrtc.VideoTrack
 import java.nio.ByteBuffer
+import java.security.KeyFactory
+import java.security.Security
+import java.security.spec.PKCS8EncodedKeySpec
 
 class CsioRTC(
-    context: Context,
-    room: String,
+    private val context: Context,
+    private val room: String,
+    deviceID: String,
     val callback: Callback,
     private val alias: String? = null) : CsioSignaling.Callback {
 
@@ -20,6 +48,7 @@ class CsioRTC(
     private const val DATA_CHANNEL_LABEL = "chat"
     private const val DATA_CHANNEL_NAME_KEY = "aliseName"
     private const val DATA_CHANNEL_MESSAGE_KEY = "message"
+    private const val SURFACE_THREAD_NAME = "surface_thread"
 
     private const val MESSAGE_ICE_KEY = "ice"
     private const val MESSAGE_OFFER_KEY = "offer"
@@ -27,10 +56,16 @@ class CsioRTC(
     private const val LOCAL_VIDEO_WIDTH = 800
     private const val LOCAL_VIDEO_HEIGHT = 600
     private const val LOCAL_VIDEO_FPS = 30
+
+    // this is for Jwt creation for demo only
+    init {
+      Security.insertProviderAt(BouncyCastleProvider(), 1)
+    }
   }
 
   interface Callback {
     fun onCsioRTCConnect()
+    fun onCsioRTCDisconnect()
     fun onCsioRTCError()
     fun onCsioRTCPeerUpdate()
     fun onCsioRTCPeerVideoAvailable()
@@ -45,8 +80,7 @@ class CsioRTC(
   private var localAudioSource: AudioSource? = null
   private var localAudioTrack: AudioTrack? = null
 
-  val localEglBase: EglBase = EglBase.create()
-  val remoteEglBase: EglBase = EglBase.create()
+  val sharedEglBase: EglBase = EglBase.create()
 
   private var peerConnections = mutableMapOf<String, PeerConnection>()
   private var peerVideoTracks = mutableMapOf<String, VideoTrack>()
@@ -56,15 +90,22 @@ class CsioRTC(
     val opt = PeerConnectionFactory.InitializationOptions.builder(context)
         .createInitializationOptions()
     PeerConnectionFactory.initialize(opt)
-    val factory = PeerConnectionFactory.builder().createPeerConnectionFactory()
-    factory.setVideoHwAccelerationOptions(localEglBase.eglBaseContext, remoteEglBase.eglBaseContext)
-    factory
+    PeerConnectionFactory.builder().createPeerConnectionFactory()
   }()
+
+  // callstats
+  private val callstats: Callstats
+
+  init {
+    callstats = initCallstats(deviceID)
+  }
 
   /**
    * Join the room and start the call
    */
   fun join() {
+    startCallstats(room)
+
     localMediaStream = peerConnectionFactory.createLocalMediaStream(LOCAL_MEDIA_LABEL)
 
     // audio
@@ -75,7 +116,11 @@ class CsioRTC(
 
     // video
     Utils.createCameraCapturer()?.let {
-      val videoSource = peerConnectionFactory.createVideoSource(it)
+      val videoSource = peerConnectionFactory.createVideoSource(false)
+      it.initialize(
+          SurfaceTextureHelper.create(SURFACE_THREAD_NAME, sharedEglBase.eglBaseContext),
+          context,
+          videoSource.capturerObserver)
       it.startCapture(LOCAL_VIDEO_WIDTH, LOCAL_VIDEO_HEIGHT, LOCAL_VIDEO_FPS)
       localVideoTrack = peerConnectionFactory.createVideoTrack(LOCAL_VIDEO_TRACK_LABEL, videoSource)
       localMediaStream?.addTrack(localVideoTrack)
@@ -100,8 +145,7 @@ class CsioRTC(
     localVideoCapturer?.dispose()
     localVideoSource?.dispose()
 
-    localEglBase.release()
-    remoteEglBase.release()
+    sharedEglBase.release()
     peerConnectionFactory.dispose()
   }
 
@@ -125,19 +169,19 @@ class CsioRTC(
    * Render local video to surface view
    */
   fun renderLocalVideo(view: SurfaceViewRenderer) {
-    localVideoTrack?.addRenderer(VideoRenderer(view))
+    localVideoTrack?.addSink(view)
   }
 
   /**
    * Render remote video to the renderer
    * Please note that this should be called in main thread only
    */
-  fun addRemoteVideoRenderer(peerId: String, renderer: VideoRenderer) {
-    peerVideoTracks[peerId]?.addRenderer(renderer)
+  fun addRemoteVideoRenderer(peerId: String, renderer: SurfaceViewRenderer) {
+    peerVideoTracks[peerId]?.addSink(renderer)
   }
 
-  fun removeRemoteVideoRenderer(peerId: String, renderer: VideoRenderer) {
-    peerVideoTracks[peerId]?.removeRenderer(renderer)
+  fun removeRemoteVideoRenderer(peerId: String, renderer: SurfaceViewRenderer) {
+    peerVideoTracks[peerId]?.removeSink(renderer)
   }
 
   // peers
@@ -169,15 +213,42 @@ class CsioRTC(
     peerDataChannels.forEach { _, dataChannel -> dataChannel.send(data) }
   }
 
+  // Others
+
+  /**
+   * Submit feedback of current call
+   */
+  fun sendFeedback(rating: Int, comment: String? = null) {
+    callstats.sendUserFeedback(rating, comment)
+  }
+
   // Peer connection
 
+  private fun createConnection(peerId: String): PeerConnection? {
+    val iceServers = listOf(
+        PeerConnection.IceServer
+            .builder("turn:turn-server-1.dialogue.io:3478")
+            .setUsername("test")
+            .setPassword("1234")
+            .createIceServer(),
+        PeerConnection.IceServer
+            .builder("turn:turn-server-1.dialogue.io:5349")
+            .setUsername("test")
+            .setPassword("1234")
+            .createIceServer()
+    )
+    return peerConnectionFactory.createPeerConnection(iceServers, PeerObserver(peerId))
+  }
+
   private fun offer(peerId: String) {
-    val peerConnection = peerConnectionFactory.createPeerConnection(emptyList(), PeerObserver(peerId))
+    callstats.log("offering $peerId")
+    val peerConnection = createConnection(peerId)
     peerConnection?.let {
+      callstats.addNewFabric(it, peerId)
       it.addStream(localMediaStream)
-      it.createOffer(SdpObserver(peerId), MediaConstraints())
       val channel = it.createDataChannel(DATA_CHANNEL_LABEL, DataChannel.Init())
       channel.registerObserver(DataChannelObserver(peerId))
+      it.createOffer(SdpObserver(peerId), MediaConstraints())
       peerDataChannels[peerId] = channel
       peerConnections[peerId] = it
       callback.onCsioRTCPeerUpdate()
@@ -185,8 +256,10 @@ class CsioRTC(
   }
 
   private fun answer(peerId: String, offerSdp: SessionDescription) {
-    val peerConnection = peerConnectionFactory.createPeerConnection(emptyList(), PeerObserver(peerId))
+    callstats.log("answering $peerId")
+    val peerConnection = createConnection(peerId)
     peerConnection?.let {
+      callstats.addNewFabric(it, peerId)
       it.addStream(localMediaStream)
       peerConnections[peerId] = it
       val observer = SdpObserver(peerId)
@@ -222,7 +295,7 @@ class CsioRTC(
       sdpJson.put("sdp", sdp.description)
       val json = JSONObject()
       json.put(MESSAGE_OFFER_KEY, sdpJson)
-      signaling.send(peerId, json.toString())
+      signaling.send(peerId, json.toString().replace("\\/", "/"))
     }
 
     override fun onCreateFailure(reason: String?) {}
@@ -246,6 +319,7 @@ class CsioRTC(
         peerVideoTracks[peerId] = it
         callback.onCsioRTCPeerVideoAvailable()
       }
+      callstats.reportEvent(peerId, OnAddStream)
     }
 
     override fun onDataChannel(channel: DataChannel) {
@@ -254,10 +328,19 @@ class CsioRTC(
       peerDataChannels[peerId] = channel
     }
 
+    override fun onIceConnectionChange(state: PeerConnection.IceConnectionState) {
+      peerConnections[peerId]?.let { callstats.reportEvent(peerId, OnIceConnectionChange(state)) }
+    }
+
+    override fun onIceGatheringChange(state: PeerConnection.IceGatheringState) {
+      peerConnections[peerId]?.let { callstats.reportEvent(peerId, OnIceGatheringChange(state)) }
+    }
+
+    override fun onSignalingChange(state: PeerConnection.SignalingState) {
+      peerConnections[peerId]?.let { callstats.reportEvent(peerId, OnSignalingChange(state)) }
+    }
+
     override fun onIceConnectionReceivingChange(p0: Boolean) {}
-    override fun onIceConnectionChange(state: PeerConnection.IceConnectionState?) {}
-    override fun onIceGatheringChange(state: PeerConnection.IceGatheringState?) {}
-    override fun onSignalingChange(state: PeerConnection.SignalingState?) {}
     override fun onIceCandidatesRemoved(candidates: Array<out IceCandidate>?) {}
     override fun onRemoveStream(stream: MediaStream?) {}
     override fun onRenegotiationNeeded() {}
@@ -326,5 +409,53 @@ class CsioRTC(
         peerConnections[fromId]?.setRemoteDescription(SdpObserver(fromId), sdp)
       }
     }
+  }
+
+  override fun onDisconnect() {
+    callback.onCsioRTCDisconnect()
+    stopCallstats()
+  }
+
+  // Callstats Analytic
+
+  private fun initCallstats(deviceID: String): Callstats {
+    // all of this Jwt creation should be done at server for security
+    // this is just for demo only
+    val appID = "710194177"
+    val localID = System.currentTimeMillis().toString()
+    val keyId = "d3d41c2f319f7f8dd6"
+
+    // create jwt
+    val key = """
+      MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgSb3qUpRoMfNVt4+r
+      9/QqHhyOrgid9g9ITQXKlCyD0juhRANCAARacoa2yLngi1vf6mhFJdORGA0oB3Zx
+      NMWsSJNQDhcWXF3QBewOogBNprSyMTki1ldZXPJ3aL8ilZGwsBb1ojFZ
+    """
+    val factory = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME)
+    val keypem = factory.generatePrivate(PKCS8EncodedKeySpec(Base64.decode(key, Base64.DEFAULT)))
+
+    val jwt = Jwts.builder()
+        .setClaims(mapOf(
+            "userID" to localID,
+            "appID" to appID,
+            "keyID" to keyId))
+        .signWith(SignatureAlgorithm.ES256, keypem)
+        .compact()
+
+    return Callstats(
+        context,
+        appID,
+        localID,
+        deviceID,
+        jwt,
+        alias)
+  }
+
+  private fun startCallstats(room: String) {
+    callstats.startSession(room)
+  }
+
+  private fun stopCallstats() {
+    callstats.stopSession()
   }
 }
