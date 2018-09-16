@@ -4,13 +4,15 @@ apply plugin: 'kotlin-android-extensions'
 
 android {
   compileSdkVersion compileSdk
+
   defaultConfig {
     applicationId "io.callstats.demo"
     minSdkVersion minSdk
     targetSdkVersion targetSdk
-    versionCode 1
-    versionName "1.0"
+    versionCode versionCode
+    versionName versionName
   }
+
   buildTypes {
     release {
       minifyEnabled false
@@ -26,11 +28,16 @@ android {
   kotlinOptions {
     jvmTarget = '1.8'
   }
+
+  lintOptions {
+    abortOnError false
+  }
 }
 
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
-  implementation project(':library')
+
+  implementation useRemoteLib() ? "io.callstats:callstats:$versionName" : project(':library')
 
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlinVersion"
   implementation "com.android.support:appcompat-v7:$supportVersion"
@@ -45,4 +52,10 @@ dependencies {
   }
 
   testImplementation "junit:junit:$junitVersion"
+}
+
+boolean useRemoteLib() {
+  def properties = new Properties()
+  properties.load(project.rootProject.file('local.properties').newDataInputStream())
+  return Boolean.valueOf(properties.getProperty('useRemoteLib') ?: false)
 }

@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'com.novoda.bintray-release'
 
 android {
   compileSdkVersion compileSdk
@@ -7,8 +8,8 @@ android {
   defaultConfig {
     minSdkVersion minSdk
     targetSdkVersion targetSdk
-    versionCode 1
-    versionName "1.0"
+    versionCode versionCode
+    versionName versionName
   }
 
   buildTypes {
@@ -32,3 +33,13 @@ dependencies {
   testImplementation "com.squareup.okhttp3:mockwebserver:$okhttpVersion"
   testImplementation "org.webrtc:google-webrtc:$webRtcVersion"
 }
+
+publish {
+  userOrg = 'callstats-io'
+  groupId = 'io.callstats'
+  artifactId = 'callstats'
+  desc = 'callstats.io Android Library'
+  publishVersion = versionName
+}
+
+tasks.withType(Javadoc).all { enabled = false }
