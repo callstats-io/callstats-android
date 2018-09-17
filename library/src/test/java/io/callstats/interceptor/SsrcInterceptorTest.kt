@@ -35,14 +35,14 @@ a=ssrc:1234 label:35429d94-5637-4686-9ecd-7d0622261ce8"""
 
   @Test
   fun onAddStreamSendEvent() {
-    val stats = mapOf("a" to RTCStats(0, "inbound-rtp", "id1", mapOf("ssrc" to "1234", "isRemote" to false, "mediaType" to "audio")))
+    val stats = mapOf("a" to RTCStats(0, "inbound-rtp", "id1", mapOf("ssrc" to 1234L, "isRemote" to false, "mediaType" to "audio")))
     val events = interceptor.process(connection, OnAddStream, "local1", "remote1", "conn1", stats)
     assertTrue(events.any { it is SsrcEvent})
   }
 
   @Test
   fun onIceConnectedSendEvent() {
-    val stats = mapOf("a" to RTCStats(0, "inbound-rtp", "id1", mapOf("ssrc" to "1234", "isRemote" to false, "mediaType" to "audio")))
+    val stats = mapOf("a" to RTCStats(0, "inbound-rtp", "id1", mapOf("ssrc" to 1234L, "isRemote" to false, "mediaType" to "audio")))
     val events = interceptor.process(
         connection,
         OnIceConnectionChange(PeerConnection.IceConnectionState.CONNECTED),
@@ -55,7 +55,7 @@ a=ssrc:1234 label:35429d94-5637-4686-9ecd-7d0622261ce8"""
 
   @Test
   fun onIceConnectedSecondTimeShouldNotSendEvent() {
-    val stats = mapOf("a" to RTCStats(0, "inbound-rtp", "id1", mapOf("ssrc" to "1234", "isRemote" to false, "mediaType" to "audio")))
+    val stats = mapOf("a" to RTCStats(0, "inbound-rtp", "id1", mapOf("ssrc" to 1234L, "isRemote" to false, "mediaType" to "audio")))
     interceptor.process(
         connection,
         OnIceConnectionChange(PeerConnection.IceConnectionState.CONNECTED),

@@ -26,7 +26,7 @@ internal data class Ssrc(
     fun fromStats(stats: RTCStats, connection: PeerConnection, localId: String, remoteId: String): Ssrc? {
       val isRemote = stats.members["isRemote"] as? Boolean ?: return null
       val sdp = if (!isRemote) connection.localDescription else connection.remoteDescription
-      val id = stats.members["ssrc"] as? String ?: return null
+      val id = (stats.members["ssrc"] as? Long)?.toString() ?: return null
       val values = sdp.ssrcValues(id) ?: return null
       val cname = values["cname"] ?: return null
       val msid = values["msid"] ?: return null
