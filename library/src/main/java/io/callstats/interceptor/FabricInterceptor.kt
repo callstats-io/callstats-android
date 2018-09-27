@@ -64,11 +64,10 @@ internal class FabricInterceptor : Interceptor {
     var events = emptyArray<Event>()
     val newTimestamp = System.currentTimeMillis()
 
-    // [Fabric state change] if connection was setup, send fabric change
-    if (connected
-        && ((event is OnIceConnectionChange && event.state != iceConnectionState)
+    // [Fabric state change] send fabric change
+    if ((event is OnIceConnectionChange && event.state != iceConnectionState)
             || (event is OnIceGatheringChange && event.state != iceGatheringState)
-            || (event is OnSignalingChange && event.state != signalingState)))
+            || (event is OnSignalingChange && event.state != signalingState))
     {
       val prevState: String
       val newState: String
@@ -96,8 +95,8 @@ internal class FabricInterceptor : Interceptor {
       events += FabricStateChangeEvent(
           remoteID = remoteID,
           connectionID = connectionID,
-          prevState = prevState.toLowerCase(),
-          newState = newState.toLowerCase(),
+          prevState = prevState.toLowerCase().replace('_', '-'),
+          newState = newState.toLowerCase().replace('_', '-'),
           changedState = changedState)
     }
 

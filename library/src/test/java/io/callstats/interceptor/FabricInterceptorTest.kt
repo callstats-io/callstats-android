@@ -34,8 +34,8 @@ class FabricInterceptorTest {
   fun fabricConnectSend() {
     val stats = mapOf<String, RTCStats>()
     val events = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CONNECTED), "local1", "remote1", "con1", stats)
-    assertEquals(1, events.size)
-    assertTrue(events.first() is FabricSetupEvent)
+    assertEquals(2, events.size) // include state change
+    assertTrue(events.any { it is FabricSetupEvent })
   }
 
   @Test
@@ -64,15 +64,7 @@ class FabricInterceptorTest {
   }
 
   @Test
-  fun fabricStateChangeShouldNotSendIfNotConnected() {
-    val stats = mapOf<String, RTCStats>()
-    val events = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CHECKING), "local1", "remote1", "con1", stats)
-    assertEquals(0, events.size)
-  }
-
-  @Test
   fun fabricStateSend() {
-    connected()
     val stats = mapOf<String, RTCStats>()
     val events = interceptor.process(connection, OnIceConnectionChange(IceConnectionState.CHECKING), "local1", "remote1", "con1", stats)
     assertEquals(1, events.size)
