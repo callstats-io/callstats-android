@@ -19,8 +19,21 @@ implementation "org.webrtc:google-webrtc:<version>"
 For more information https://webrtc.org/native-code/android/
 
 ### Create Callstats object
+
+##### Kotlin
 ```kotlin
 callstats = Callstats(
+    context,
+    appID, // Application ID from Callstats
+    localID, // current user ID
+    deviceID, // unique device ID
+    jwt, // jwt from server for authentication
+    alias) // (Optional) user alias
+```
+
+##### Java
+```Java
+callstats = new Callstats(
     context,
     appID, // Application ID from Callstats
     localID, // current user ID
@@ -36,17 +49,24 @@ callstats.startSession(room)
 ```
 
 These events need to be forwarded to the library in order to start tracking the call. Add followings into your WebRTC `PeerConnection.Observer` For example:
+
 ```kotlin
 override fun onIceConnectionChange(state: PeerConnection.IceConnectionState) {
   callstats.reportEvent(peerId, OnIceConnectionChange(state))
+  // when not using Kotlin   
+  // callstats.reportEvent(peerId, new OnIceConnectionChange(state)) 
 }
 
 override fun onIceGatheringChange(state: PeerConnection.IceGatheringState) {
   callstats.reportEvent(peerId, OnIceGatheringChange(state))
+  // when not using Kotlin   
+  // callstats.reportEvent(peerId, new OnIceGatheringChange(state))
 }
 
 override fun onSignalingChange(state: PeerConnection.SignalingState) {
    callstats.reportEvent(peerId, OnSignalingChange(state))
+   // when not using Kotlin   
+   // callstats.reportEvent(peerId, new OnSignalingChange(state))
 }
 ```
 
