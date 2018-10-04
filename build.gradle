@@ -2,7 +2,7 @@
 
 buildscript {
   ext {
-    versionName = '0.1.0'
+    versionName = '0.1.1'
     versionCode = 1
     minSdk = 21
     targetSdk = 27
