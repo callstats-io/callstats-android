@@ -53,19 +53,19 @@ These events need to be forwarded to the library in order to start tracking the 
 ```kotlin
 override fun onIceConnectionChange(state: PeerConnection.IceConnectionState) {
   callstats.reportEvent(peerId, OnIceConnectionChange(state))
-  // when not using Kotlin   
+  // when using Java   
   // callstats.reportEvent(peerId, new OnIceConnectionChange(state)) 
 }
 
 override fun onIceGatheringChange(state: PeerConnection.IceGatheringState) {
   callstats.reportEvent(peerId, OnIceGatheringChange(state))
-  // when not using Kotlin   
+  // when using Java   
   // callstats.reportEvent(peerId, new OnIceGatheringChange(state))
 }
 
 override fun onSignalingChange(state: PeerConnection.SignalingState) {
    callstats.reportEvent(peerId, OnSignalingChange(state))
-   // when not using Kotlin   
+   // when using Java   
    // callstats.reportEvent(peerId, new OnSignalingChange(state))
 }
 ```
