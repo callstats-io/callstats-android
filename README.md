@@ -1,9 +1,9 @@
-CallStats for Android
+callstats for Android
 =====================
 
 [![jcenter](https://api.bintray.com/packages/callstats-io/maven/callstats/images/download.svg)](https://bintray.com/callstats-io/maven/callstats/_latestVersion)
 
-[Callstats](https://www.callstats.io/) WebRTC analytic library for Android.
+[callstats](https://www.callstats.io/) WebRTC analytic library for Android.
 
 ## Getting started
 ### Gradle dependency
